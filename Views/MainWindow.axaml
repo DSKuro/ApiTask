@@ -1,8 +1,12 @@
 <Window xmlns="https://github.com/avaloniaui"
+		xmlns:services="using:ApiTask.Services"
+		services:DialogueManager.Register="{Binding}"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:ApiTask.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+        xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ApiTask.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -15,6 +19,23 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+	<Interaction.Behaviors>
+		<EventTriggerBehavior EventName="Opened">
+			<InvokeCommandAction Command="{Binding OpenFormCommand}" />
+		</EventTriggerBehavior>
+	</Interaction.Behaviors>
 
+	<StackPanel Margin="20">
+		<Button>Press me</Button>
+		<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+		<Button Content="Click">
+			<Interaction.Behaviors>
+				<EventTriggerBehavior EventName="Click">
+					<InvokeCommandAction Command="{Binding ClickCommand}" />
+				</EventTriggerBehavior>
+			</Interaction.Behaviors>
+		</Button>
+	</StackPanel>
+	
 </Window>

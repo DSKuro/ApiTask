@@ -13,7 +13,7 @@ namespace ApiTask.ViewModels
             .AddUserSecrets<Program>()
             .Build();
 
-        public static String getValueByKey(String key)
+        public static string getValueByKey(string key)
         {
             if (configuration[key] == null)
             {
