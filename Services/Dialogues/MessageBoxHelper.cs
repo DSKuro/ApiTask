@@ -5,25 +5,14 @@ using MsBox.Avalonia.Enums;
 using System;
 using System.Threading.Tasks;
 
-namespace ApiTask.Services
+namespace ApiTask.Services.Dialogues
 {
     public static class MessageBoxHelper
     {
         public static Task<ButtonResult?> ShowMessageBoxAsync(this object? context, string? title, string? content,
             ButtonEnum buttons)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            TopLevel? topLevel = DialogueManager.GetTopLevelForContext(context);
-
-            if (topLevel == null)
-            {
-                throw new ArgumentNullException(nameof(topLevel));
-            }
-
+            TopLevel topLevel = context.GetTopLevelForAnyDialogue();
             return ShowMessageBoxImpl(topLevel, title, content, buttons);
         }
 
@@ -31,7 +20,7 @@ namespace ApiTask.Services
             ButtonEnum buttons)
         {
             // возможно условие излишне
-            if (topLevel is Avalonia.Controls.Window window)
+            if (topLevel is Window window)
             {
                 IMsBox<ButtonResult> box = MessageBoxManager.
                 GetMessageBoxStandard(title, content,

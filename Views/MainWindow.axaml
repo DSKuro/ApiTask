@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
 		xmlns:services="using:ApiTask.Services"
-		services:DialogueManager.Register="{Binding}"
+		xmlns:dialogues="using:ApiTask.Services.Dialogues"
+		dialogues:DialogueManager.Register="{Binding}"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:ApiTask.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"

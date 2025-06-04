@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using System;
 using System.Collections.Generic;
 
-namespace ApiTask.Services
+namespace ApiTask.Services.Dialogues
 {
     public class DialogueManager
     {

@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ApiTask.Services
+namespace ApiTask.Services.Dialogues
 {
-    public static class FileDialogueClass
+    public static class FileDialogueHelper
     {
         public static FilePickerFileType ExcelAll { get; } = new("Excel Files")
         {
@@ -20,19 +20,7 @@ namespace ApiTask.Services
         public static async Task<IEnumerable<IStorageFile?>> OpenFileDialogueAsync(this object? context,
             string? title, bool selectMany = false)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            TopLevel? topLevel = DialogueManager.GetTopLevelForContext(context);
-
-            if (topLevel == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-
+            TopLevel topLevel = context.GetTopLevelForAnyDialogue();
             return await OpenFileDialogueImpl(topLevel, title, selectMany);
         }
 

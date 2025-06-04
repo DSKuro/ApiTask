@@ -1,5 +1,6 @@
 ﻿using ApiTask.Models;
 using ApiTask.Services;
+using ApiTask.Services.Dialogues;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using MsBox.Avalonia.Enums;
@@ -15,7 +16,7 @@ namespace ApiTask.ViewModels
     public partial class MainWindowViewModel : ClosableViewModel
     {
 
-        private static readonly string Key = "api";
+        private static readonly string Key = "ap";
         private static readonly string AuthKey = "auth";
         private static readonly string JsonKey = "access_token";
         public string Greeting { get; set; } = "Welcome to Avalonia";
@@ -35,6 +36,7 @@ namespace ApiTask.ViewModels
             }
             ExcelParser.GetDataFromFile(path);
             Console.WriteLine();
+            //Http.GetDataWithJSON();
         }
 
         [RelayCommand]
@@ -46,7 +48,10 @@ namespace ApiTask.ViewModels
                 (Dictionary<string, string?>?) await GetToken(authKey, apiKey, typeof(Dictionary<string, string>));
 
             Token.AccessToken = data[JsonKey];
-            Console.WriteLine();
+            //Http.SetAuthorizationHeader(Token.AccessToken);
+            // data =
+            //    (Dictionary<string, string?>?)Http.GetDataWithJSON("https://api.dkc.ru/v1/catalog/material", null, "R5NFPB80", typeof(Dictionary<string, string>)).Result;
+            //Console.WriteLine();
         }
 
         private async Task<(string?, string?)> GetKeys()
@@ -71,7 +76,7 @@ namespace ApiTask.ViewModels
             object? token = null;
             try
             {
-                token = await Http.GetDataWithJSON(path, param, type);
+                token = await Http.GetDataWithJSON(path, param, "", type);
             }
             catch (UriFormatException ex)
             {
