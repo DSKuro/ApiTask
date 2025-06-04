@@ -17,7 +17,7 @@ namespace ApiTask.Services
             MimeTypes = null
         };
 
-        public static async Task<IEnumerable<string?>> OpenFileDialogueAsync(this object? context,
+        public static async Task<IEnumerable<IStorageFile?>> OpenFileDialogueAsync(this object? context,
             string? title, bool selectMany = false)
         {
             if (context == null)
@@ -36,7 +36,7 @@ namespace ApiTask.Services
             return await OpenFileDialogueImpl(topLevel, title, selectMany);
         }
 
-        public static async Task<IEnumerable<string?>> OpenFileDialogueImpl(TopLevel topLevel, string? title, bool selectMany)
+        public static async Task<IEnumerable<IStorageFile?>> OpenFileDialogueImpl(TopLevel topLevel, string? title, bool selectMany)
         {
             IReadOnlyList<IStorageFile> storageFiles = await topLevel.StorageProvider.OpenFilePickerAsync(
                     new FilePickerOpenOptions()
@@ -46,7 +46,7 @@ namespace ApiTask.Services
                         FileTypeFilter = new[] { ExcelAll }
                     }
                 );
-            return storageFiles.Select(s => s.Name);
+            return storageFiles;
         }
     }
 }

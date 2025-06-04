@@ -1,9 +1,12 @@
 ﻿using ApiTask.Models;
 using ApiTask.Services;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using MsBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -20,7 +23,17 @@ namespace ApiTask.ViewModels
         [RelayCommand]
         private async Task Click()
         {
-            IEnumerable<string?> selectFiles = await this.OpenFileDialogueAsync("test");
+            IEnumerable<IStorageFile?> selectFiles = await this.OpenFileDialogueAsync("test");
+            string path;
+            try
+            {
+                path = selectFiles.First().Path.AbsolutePath;
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
+            ExcelParser.GetDataFromFile(path);
             Console.WriteLine();
         }
 
