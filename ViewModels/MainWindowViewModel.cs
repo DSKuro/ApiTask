@@ -12,7 +12,7 @@ namespace ApiTask.ViewModels
     public partial class MainWindowViewModel : ClosableViewModel
     {
 
-        private static readonly string Key = "ap";
+        private static readonly string Key = "api";
         private static readonly string AuthKey = "auth";
         private static readonly string JsonKey = "access_token";
         public string Greeting { get; set; } = "Welcome to Avalonia";
@@ -20,6 +20,7 @@ namespace ApiTask.ViewModels
         [RelayCommand]
         private async Task Click()
         {
+            IEnumerable<string?> selectFiles = await this.OpenFileDialogueAsync("test");
             Console.WriteLine();
         }
 

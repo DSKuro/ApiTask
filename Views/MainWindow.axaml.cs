@@ -11,7 +11,6 @@ namespace ApiTask.Views
         public MainWindow()
         {
             InitializeComponent();
-            InitializeEvents();
         }
 
         protected override void OnOpened(EventArgs e)
