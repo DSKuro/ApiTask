@@ -1,35 +1,100 @@
-﻿using ApiTask.Services;
-using ApiTask.Views;
-using Avalonia.Utilities;
-using Avalonia.Xaml.Interactions.Custom;
+﻿using ApiTask.Models;
+using ApiTask.Services;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace ApiTask.ViewModels
 {
-    public partial class MainWindowViewModel : ViewModelBase
+    public partial class MainWindowViewModel : ClosableViewModel
     {
+
+        private static readonly string Key = "ap";
+        private static readonly string AuthKey = "auth";
+        private static readonly string JsonKey = "access_token";
         public string Greeting { get; set; } = "Welcome to Avalonia";
 
         [RelayCommand]
         private async Task Click()
         {
-            //await MessageBox.Show(null, "test", "test", MessageBox.MessageBoxButtons.Ok);
-            await this.ShowMessageBoxAsync("Title", "Content");
+            Console.WriteLine();
         }
 
         [RelayCommand]
-        private void OpenForm()
+        private async Task OpenForm()
         {
-           // var box = MessageBoxManager
-           //.GetMessageBoxStandard("Caption", "test",
-           //    ButtonEnum.YesNo);
+            (string? apiKey, string? authKey) = await GetKeys();
 
-           // var result = box.ShowAsync();
+            Dictionary<string, string?>? data =
+                (Dictionary<string, string?>?) await GetToken(authKey, apiKey, typeof(Dictionary<string, string>));
+
+            Token.AccessToken = data[JsonKey];
+            Console.WriteLine();
+        }
+
+        private async Task<(string?, string?)> GetKeys()
+        {
+            string? apiKey = ReadConfiguration.getValueByKey(Key);
+            if (apiKey == null)
+            {
+                await ErrorHelper("Api ключ не задан");
+            }
+
+            string? authKey = ReadConfiguration.getValueByKey(AuthKey);
+            if (authKey == null)
+            {
+                await ErrorHelper("Сайт авторизации не задан");
+            }
+
+            return (apiKey, authKey);
+        }
+
+        private async Task<object?> GetToken(string path, string? param, Type type)
+        {
+            object? token = null;
+            try
+            {
+                token = await Http.GetDataWithJSON(path, param, type);
+            }
+            catch (UriFormatException ex)
+            {
+                await ErrorHelper("Неправильный Uri адрес");
+
+            }
+            catch (HttpRequestException ex)
+            {
+                await ErrorHelper("Ошибка ответа сайта");
+            }
+            catch (OperationCanceledException ex)
+            {
+                await ErrorHelper("Ошибка чтения");
+            }
+            catch (ArgumentNullException ex)
+            {
+                await ErrorHelper("Данных нет");
+            }
+            catch (Exception ex)
+            {
+                await ErrorHelper("Ошибка подключения");
+            }
+
+            return token;
+        }
+
+        private async Task ErrorHelper(string content)
+        {
+            try
+            {
+                await this.ShowMessageBoxAsync("Ошибка", content, ButtonEnum.Ok);
+            }
+            finally
+            {
+                this.OnClosingRequest();
+                Environment.Exit(1);
+            }
         }
     }
 }

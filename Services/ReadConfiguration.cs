@@ -1,11 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ApiTask.ViewModels
+namespace ApiTask.Services
 {
     public static class ReadConfiguration
     {
@@ -13,13 +8,8 @@ namespace ApiTask.ViewModels
             .AddUserSecrets<Program>()
             .Build();
 
-        public static string getValueByKey(string key)
+        public static string? getValueByKey(string key)
         {
-            if (configuration[key] == null)
-            {
-                return "";
-            }
-
             return configuration[key];
         }
     }

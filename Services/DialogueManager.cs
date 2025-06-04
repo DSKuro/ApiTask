@@ -2,9 +2,6 @@
 using Avalonia.Controls;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ApiTask.Services
 {
@@ -51,7 +48,7 @@ namespace ApiTask.Services
 
         public static Visual? GetVisualForContext(object context)
         {
-            return RegistrationMapper.TryGetValue(context, out Visual result) ? result : null;
+            return RegistrationMapper.TryGetValue(context, out Visual? result) ? result : null;
         }
 
         public static TopLevel? GetTopLevelForContext(object context)
