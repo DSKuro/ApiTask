@@ -58,7 +58,7 @@ namespace ApiTask.Models
         public bool NoPrice { get; set; }
 
         [JsonPropertyName("price")]
-        public int Price { get; set; }
+        public float Price { get; set; }
 
         [JsonPropertyName("barcode")]
         public List<Int64> BarCode { get; set; }

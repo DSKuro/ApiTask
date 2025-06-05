@@ -1,9 +1,5 @@
 ﻿using Aspose.Cells;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ApiTask.Services
 {
@@ -44,7 +40,7 @@ namespace ApiTask.Services
             {
                 for (int j = 0; j < columns; j++)
                 {
-                    data.Add(worksheet.Cells[i, j].ToString());
+                    data.Add(worksheet.Cells[i, j].Value.ToString());
                 }
             }
         }

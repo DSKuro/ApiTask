@@ -9,14 +9,14 @@ namespace ApiTask.Services.Dialogues
 {
     public static class MessageBoxHelper
     {
-        public static Task<ButtonResult?> ShowMessageBoxAsync(this object? context, string? title, string? content,
+        public static Task<ButtonResult?> ShowMessageBoxAsync(this object? context, string title, string content,
             ButtonEnum buttons)
         {
             TopLevel topLevel = context.GetTopLevelForAnyDialogue();
             return ShowMessageBoxImpl(topLevel, title, content, buttons);
         }
 
-        private static async Task<ButtonResult?> ShowMessageBoxImpl(TopLevel topLevel, string? title, string? content,
+        private static async Task<ButtonResult?> ShowMessageBoxImpl(TopLevel topLevel, string title, string content,
             ButtonEnum buttons)
         {
             // возможно условие излишне
@@ -32,4 +32,4 @@ namespace ApiTask.Services.Dialogues
             throw new ArgumentNullException(nameof(topLevel));
         }
     }
-}
+ }

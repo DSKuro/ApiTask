@@ -1,6 +1,7 @@
 ﻿using ApiTask.Models;
 using ApiTask.Services;
 using ApiTask.Services.Dialogues;
+using ApiTask.Services.Exceptions;
 using Avalonia.Controls.Shapes;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
@@ -9,7 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
 namespace ApiTask.ViewModels
@@ -18,8 +21,10 @@ namespace ApiTask.ViewModels
     {
 
         private static readonly string Key = "api";
-        private static readonly string AuthKey = "auth";
-        private static readonly string JsonKey = "access_token";
+        private static readonly string AuthSite = "auth";
+        private static readonly string AuthHeader = "header";
+        private static readonly string MaterialSite = "material";
+        private static readonly string FileDialogueTitle = "Выберите файл:";
 
         private Token AccessToken;
 
@@ -35,140 +40,105 @@ namespace ApiTask.ViewModels
         {
             try
             {
-                GetMaterialDataImpl();
+                await GetMaterialDataImpl();
             }
-            catch (UriFormatException ex)
+            catch (HttpException ex)
             {
-                await ErrorHelper("Неправильный Uri адрес");
-
+                await MessageBoxHelper(ex.Message, ErrorCallback);
             }
-            catch (HttpRequestException ex)
+            catch (ArgumentNullException e)
             {
-                await ErrorHelper("Ошибка ответа сайта");
-            }
-            catch (OperationCanceledException ex)
-            {
-                await ErrorHelper("Ошибка чтения");
-            }
-            catch (ArgumentNullException ex)
-            {
-                await ErrorHelper("Данных нет");
+                await MessageBoxHelper("Неправильно задан ключ", ErrorCallback);
             }
             catch (InvalidOperationException ex)
             {
-                await ErrorHelper("Недопустимая операция");
-            }
-            catch (Exception ex)
-            {
-                await ErrorHelper("Ошибка подключения");
+                return;
             }
         }
 
-        private async void GetMaterialDataImpl()
+        private async Task GetMaterialDataImpl()
         {
-            string path = null;
-            try
-            {
-                path = await GetAbsolutePathFile();
-            }
-            catch (Exception)
-            {
-                await ErrorHelper("test");
-            }
+            string path = await GetAbsolutePathFile();
+            List<string> codes = ExcelParser.GetDataFromFile(path);
+            await GetAllMaterials(codes);
+        }
 
-            ExcelParser.GetDataFromFile(path);
-            Materials material = (Materials)await Http.GetDataWithJSON("https://api.dkc.ru/v1/catalog/materil", null, "code=R5NFPB80",
+        private async Task GetAllMaterials(List<string> codes) 
+        {
+            string site = ReadConfiguration.getValueByKey(MaterialSite);
+            foreach (string code in codes)
+            {
+                Materials material = (Materials)await Http.GetDataWithJSON(GetMaterialPath(site, code),
                 typeof(Materials));
+            }
+        }
+
+        private Http.QueryBuilder GetMaterialPath(string uri, string code)
+        {
+            Http.QueryBuilder path = new Http.QueryBuilder(uri);
+            path.SetQuery("code", code);
+            return path;
         }
 
         private async Task<string?> GetAbsolutePathFile()
         {
-            IEnumerable<IStorageFile?> selectFiles = await this.OpenFileDialogueAsync("test");
-            string path;
-            path = selectFiles.First().Path.AbsolutePath;
+            IEnumerable<IStorageFile?> selectFiles = await this.OpenFileDialogueAsync(FileDialogueTitle);
+            string path = selectFiles.First().Path.AbsolutePath;
             return path;
         }
 
         [RelayCommand]
         private async Task OpenForm()
         {
-            await GetKey();
-            Http.SetAuthorizationHeader(AccessToken.AccessToken);
+            await ApplyToken();
         }
 
-        private async Task GetKey()
+        private async Task ApplyToken()
         {
-            (string? apiKey, string? authKey) = await GetKeysFromConfig();
-
-            AccessToken =
-                (Token)await GetToken(authKey, apiKey, typeof(Token));
-
-            if (AccessToken == null)
+            try
             {
-                await ErrorHelper("Пустой токен");
+                await ApplyTokenImpl();
+            }
+            catch (HttpException ex)
+            {
+                await MessageBoxHelper(ex.Message, ErrorCallback);
+            }
+            catch (ArgumentNullException e)
+            {
+                await MessageBoxHelper("Неправильно задан ключ", ErrorCallback);
             }
         }
 
-        private async Task<(string?, string?)> GetKeysFromConfig()
+        private async Task ApplyTokenImpl()
         {
-            string? apiKey = ReadConfiguration.getValueByKey(Key);
-            if (apiKey == null)
-            {
-                await ErrorHelper("Api ключ не задан");
-            }
+            await GetToken();
+            Http.AddHeader(ReadConfiguration.getValueByKey(AuthHeader), AccessToken.AccessToken);
+        }
 
-            string? authKey = ReadConfiguration.getValueByKey(AuthKey);
-            if (authKey == null)
-            {
-                await ErrorHelper("Сайт авторизации не задан");
-            }
+        private async Task GetToken()
+        {
+            (string apiKey, string authKey) = GetKeysFromConfig();
+            AccessToken = (Token)await Http.GetDataWithJSON(GetFullTokenPath(authKey, apiKey), typeof(Token));
+        }
 
+        private Http.QueryBuilder GetFullTokenPath(string uri, string param)
+        {
+            Http.QueryBuilder path = new Http.QueryBuilder(uri);
+            path.SetParam(param);
+            return path;
+        }
+
+        private (string, string) GetKeysFromConfig()
+        {
+            string apiKey = ReadConfiguration.getValueByKey(Key);
+            string authKey = ReadConfiguration.getValueByKey(AuthSite);
             return (apiKey, authKey);
         }
 
-        private async Task<object?> GetToken(string path, string? param, Type type)
+        private void ErrorCallback()
         {
-            object? token = null;
-            try
-            {
-                token = await Http.GetDataWithJSON(path, param, null, type);
-            }
-            catch (UriFormatException ex)
-            {
-                await ErrorHelper("Неправильный Uri адрес");
-
-            }
-            catch (HttpRequestException ex)
-            {
-                await ErrorHelper("Ошибка ответа сайта");
-            }
-            catch (OperationCanceledException ex)
-            {
-                await ErrorHelper("Ошибка чтения");
-            }
-            catch (ArgumentNullException ex)
-            {
-                await ErrorHelper("Данных нет");
-            }
-            catch (Exception ex)
-            {
-                await ErrorHelper("Ошибка подключения");
-            }
-
-            return token;
-        }
-
-        private async Task ErrorHelper(string content)
-        {
-            try
-            {
-                await this.ShowMessageBoxAsync("Ошибка", content, ButtonEnum.Ok);
-            }
-            finally
-            {
-                this.OnClosingRequest();
-                Environment.Exit(1);
-            }
+            this.OnClosingRequest();
+            Environment.Exit(1);
         }
     }
 }

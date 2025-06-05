@@ -35,6 +35,11 @@ namespace ApiTask.Services.Dialogues
                 throw new InvalidOperationException("The DialogueManager can only be registered on a Visual");
             }
 
+            RegisterChangedImpl(sender, e);
+        }
+
+        private static void RegisterChangedImpl(Visual sender, AvaloniaPropertyChangedEventArgs e)
+        {
             if (e.OldValue != null)
             {
                 RegistrationMapper.Remove(e.OldValue);

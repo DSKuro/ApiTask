@@ -3,8 +3,6 @@ using System.Net.Http.Json;
 using System.Net.Http;
 using System;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json.Serialization;
 
 namespace ApiTask.Services
 {
@@ -18,16 +16,44 @@ namespace ApiTask.Services
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(AcceptValue));
         }
 
-        public static void SetAuthorizationHeader(string token)
+        public static void AddHeader(string header, string value)
         {
-            client.DefaultRequestHeaders.Add("Accesstoken", token);
+            client.DefaultRequestHeaders.Add(header, value);
         }
 
-        public static async Task<object> GetDataWithJSON(string uri, string? param, string? query, Type CastType)
+        public static async Task<object> GetDataWithJSON(QueryBuilder path, Type castType)
+        {
+            try
+            {
+                return await GetDataWithJSONImpl(path, castType);
+            }
+            catch (UriFormatException ex)
+            {
+                throw new Exceptions.HttpException("Неправильный Uri адрес");
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exceptions.HttpException("Ошибка ответа сайта");
+            }
+            catch (OperationCanceledException ex)
+            {
+                throw new Exceptions.HttpException("Ошибка чтения");
+            }
+            catch (ArgumentNullException ex)
+            {
+                throw new Exceptions.HttpException("Данных нет");
+            }
+            catch (Exception ex)
+            {
+                throw new Exceptions.HttpException("Ошибка подключения");
+            }
+        }
+
+        public static async Task<object> GetDataWithJSONImpl(QueryBuilder path, Type castType)
         {
             HttpResponseMessage response;
-                response = await GetResponse(uri, param, query);
-            object? data = await response.Content.ReadFromJsonAsync(CastType);
+                response = await GetResponse(path);
+            object? data = await response.Content.ReadFromJsonAsync(castType);
             if (data == null)
             {
                 throw new ArgumentNullException(nameof(data));
@@ -35,35 +61,53 @@ namespace ApiTask.Services
             return data;
         }
 
-        private static async Task<HttpResponseMessage> GetResponse(string uri, string? param, string? query)
+        private static async Task<HttpResponseMessage> GetResponse(QueryBuilder path)
         {
-            string path = GetFullPath(uri, param, query);
-            HttpResponseMessage? response = await client.GetAsync(path);
+            HttpResponseMessage? response = await client.GetAsync(path.query);
             if (response.StatusCode == System.Net.HttpStatusCode.BadRequest
-                || response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                || response.StatusCode == System.Net.HttpStatusCode.NotFound
+                || response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
                 throw new HttpRequestException("Get an error from site");
             }
             return response;
         }
 
-        private static string GetFullPath(string uri, string? param, string? query)
+        public class QueryBuilder
         {
-            // может вынести в отдельный класс
-            string fullUri = uri[uri.Length - 1] == '/' ? uri.Substring(0, uri.Length - 1) : uri;
-            StringBuilder fullPath = new StringBuilder(fullUri);
+            public string query { get; private set; } 
 
-            if (param != null)
+            public QueryBuilder(string uri)
             {
-                fullPath.Append("/" + param);
+                InitializeQuery(uri);
             }
 
-            if (query != null)
+            private void InitializeQuery(string uri)
             {
-                fullPath.Append("?" + query);
+                query = uri;
+                if (query[query.Length - 1] == '/')
+                {
+                    query = query.Remove(query.Length, 1);
+                }
             }
 
-            return fullPath.ToString();
+            public void SetParam(string param)
+            {
+                query += "/" + param;
+            }
+
+            public void SetQuery(string name, string queryParam)
+            {
+                if (query.Contains("?"))
+                {
+                    query += "&";
+                }
+                else
+                {
+                    query += "?";
+                }
+                query += name + "=" + queryParam;
+            }
         }
     }
 }
