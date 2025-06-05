@@ -1,7 +1,10 @@
-﻿namespace ApiTask.Models
+﻿using System.Text.Json.Serialization;
+
+namespace ApiTask.Models
 {
-    public static class Token
+    public record Token
     {
-        public static string? AccessToken { get; set; }
+        [JsonPropertyName("access_token")]
+        public string AccessToken { get; set; }
     }
 }

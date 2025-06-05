@@ -4,6 +4,7 @@ using System.Net.Http;
 using System;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace ApiTask.Services
 {
@@ -19,7 +20,7 @@ namespace ApiTask.Services
 
         public static void SetAuthorizationHeader(string token)
         {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            client.DefaultRequestHeaders.Add("Accesstoken", token);
         }
 
         public static async Task<object> GetDataWithJSON(string uri, string? param, string? query, Type CastType)
@@ -48,9 +49,20 @@ namespace ApiTask.Services
 
         private static string GetFullPath(string uri, string? param, string? query)
         {
-            string fullUri = uri[uri.Length - 1] == '/' ? uri : uri + "/";
-            StringBuilder path = new StringBuilder(fullUri + param);
-            StringBuilder fullPath = query == "" ? path : new StringBuilder(path + "?" + query);
+            // может вынести в отдельный класс
+            string fullUri = uri[uri.Length - 1] == '/' ? uri.Substring(0, uri.Length - 1) : uri;
+            StringBuilder fullPath = new StringBuilder(fullUri);
+
+            if (param != null)
+            {
+                fullPath.Append("/" + param);
+            }
+
+            if (query != null)
+            {
+                fullPath.Append("?" + query);
+            }
+
             return fullPath.ToString();
         }
     }
