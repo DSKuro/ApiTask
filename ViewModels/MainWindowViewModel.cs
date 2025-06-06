@@ -2,24 +2,20 @@
 using ApiTask.Services;
 using ApiTask.Services.Dialogues;
 using ApiTask.Services.Exceptions;
-using Avalonia.Controls.Shapes;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MsBox.Avalonia.Enums;
+using DynamicData.Binding;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Collections.ObjectModel;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Net.Http;
-using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
 namespace ApiTask.ViewModels
 {
     public partial class MainWindowViewModel : ClosableViewModel
     {
-
         private static readonly string Key = "api";
         private static readonly string AuthSite = "auth";
         private static readonly string AuthHeader = "header";
@@ -28,7 +24,14 @@ namespace ApiTask.ViewModels
 
         private Token AccessToken;
 
-        public string Greeting { get; set; } = "Welcome to Avalonia";
+        public event EventHandler? DataGridChanged;
+
+        [ObservableProperty]
+        public string greeting = "Welcome to Avalonia!";
+
+        [ObservableProperty]
+        ObservableCollection<SelectedMaterial> selectedMaterials =
+            new ObservableCollection<SelectedMaterial>(new List<SelectedMaterial>());
 
         [RelayCommand]
         private async Task OpenFile()
@@ -65,11 +68,13 @@ namespace ApiTask.ViewModels
 
         private async Task GetAllMaterials(List<string> codes) 
         {
-            string site = ReadConfiguration.getValueByKey(MaterialSite);
+            SelectedMaterials.Clear();
+            string site = ReadConfiguration.GetValueByKeyFromConfiguration(MaterialSite);
             foreach (string code in codes)
             {
                 Materials material = (Materials)await Http.GetDataWithJSON(GetMaterialPath(site, code),
                 typeof(Materials));
+                SelectedMaterials.Add(new SelectedMaterial(material));
             }
         }
 
@@ -112,7 +117,7 @@ namespace ApiTask.ViewModels
         private async Task ApplyTokenImpl()
         {
             await GetToken();
-            Http.AddHeader(ReadConfiguration.getValueByKey(AuthHeader), AccessToken.AccessToken);
+            Http.AddHeader(ReadConfiguration.GetValueByKeyFromSecrets(AuthHeader), AccessToken.AccessToken);
         }
 
         private async Task GetToken()
@@ -130,8 +135,8 @@ namespace ApiTask.ViewModels
 
         private (string, string) GetKeysFromConfig()
         {
-            string apiKey = ReadConfiguration.getValueByKey(Key);
-            string authKey = ReadConfiguration.getValueByKey(AuthSite);
+            string apiKey = ReadConfiguration.GetValueByKeyFromSecrets(Key);
+            string authKey = ReadConfiguration.GetValueByKeyFromConfiguration(AuthSite);
             return (apiKey, authKey);
         }
 
@@ -140,5 +145,10 @@ namespace ApiTask.ViewModels
             this.OnClosingRequest();
             Environment.Exit(1);
         }
+    }
+
+    public class Test
+    {
+        public string test { get; set; }
     }
 }

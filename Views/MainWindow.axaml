@@ -11,6 +11,7 @@
         xmlns:mx="https://schemas.eremexcontrols.net/avalonia"
 		xmlns:mxb="https://schemas.eremexcontrols.net/avalonia/bars"
 		xmlns:mxe="https://schemas.eremexcontrols.net/avalonia/editors"
+		xmlns:mxdg="https://schemas.eremexcontrols.net/avalonia/datagrid"
 		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ApiTask.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -29,23 +30,49 @@
 		</EventTriggerBehavior>
 	</Interaction.Behaviors>
 
-	<mxb:ToolbarManager IsWindowManager="True">
-		<Grid RowDefinitions="Auto, *, Auto, *, Auto" ColumnDefinitions="Auto, *, Auto">
-			<mxb:ToolbarContainerControl DockType="Top" Grid.ColumnSpan="3">
-				<mxb:Toolbar x:Name="MainMenu" ToolbarName="Main Menu" StretchToolbar="True"
-							 AllowDragToolbar="False" ShowCustomizationButton="False">
-					<mxb:ToolbarButtonItem 
-						Header="Open"
-						Command="{Binding OpenFileCommand}"
-						Glyph="{SvgImage '/Assets/open-folder.svg'}"
-						GlyphSize="20,20"
-						Category="Main Menu"
-						ToolTip.Tip="Открыть файл"
+	<StackPanel Grid.Row="1" Grid.Column="1">
+		<mxb:ToolbarManager IsWindowManager="True">
+			<Grid RowDefinitions="Auto, *, Auto, *, Auto" ColumnDefinitions="Auto, *, Auto">
+				<mxb:ToolbarContainerControl DockType="Top" Grid.ColumnSpan="3">
+					<mxb:Toolbar x:Name="MainMenu" ToolbarName="Main Menu" StretchToolbar="True"
+								 AllowDragToolbar="False" ShowCustomizationButton="False">
+						<mxb:ToolbarButtonItem
+							Header="Open"
+							Command="{Binding OpenFileCommand}"
+							Glyph="{SvgImage '/Assets/open-folder.svg'}"
+							GlyphSize="20,20"
+							Category="Main Menu"
+							ToolTip.Tip="Открыть файл"
 						/>
-				</mxb:Toolbar>
-			</mxb:ToolbarContainerControl>
-		</Grid>
-	</mxb:ToolbarManager>
+					</mxb:Toolbar>
+				</mxb:ToolbarContainerControl>
+			</Grid>
+		</mxb:ToolbarManager>
+
+		<mxdg:DataGridControl x:Name="dataGrid" ShowGroupPanel="False" Name="dataGrid"
+							  ItemsSource="{Binding SelectedMaterials}"
+							   HorizontalAlignment="Stretch" 
+			AutoGenerateColumns="False" BorderThickness="1,1">
+
+			<mxdg:GridColumn FieldName="Code" Header="Код" Width="*" MinWidth="50">
+				<mxdg:GridColumn.EditorProperties>
+					<mxe:TextEditorProperties HorizontalContentAlignment="Left" TextWrapping="Wrap"/>
+				</mxdg:GridColumn.EditorProperties>
+			</mxdg:GridColumn>
+			<mxdg:GridColumn FieldName="Name" Header="Название" CellTemplate="" Width="*" MinWidth="50">
+				<mxdg:GridColumn.EditorProperties>
+					<mxe:TextEditorProperties HorizontalContentAlignment="Left" TextWrapping="Wrap"/>
+				</mxdg:GridColumn.EditorProperties>
+			</mxdg:GridColumn>
+			<mxdg:GridColumn FieldName="Price" Header="Стоимость" Width="*" MinWidth="50">
+				<mxdg:GridColumn.EditorProperties>
+					<mxe:TextEditorProperties HorizontalContentAlignment="Left" TextWrapping="Wrap"/>
+				</mxdg:GridColumn.EditorProperties>
+			</mxdg:GridColumn>
+		</mxdg:DataGridControl>
+		<TextBlock Name="test" Text="{Binding Greeting}"/>
+	</StackPanel>
+
 
 	<!--<StackPanel Margin="20">
 		<Button>Press me</Button>

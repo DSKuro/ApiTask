@@ -21,16 +21,22 @@ namespace ApiTask.Views
 
         private void InitializeEvents()
         {
-            if (this.DataContext is ClosableViewModel model)
+            if (this.DataContext is MainWindowViewModel model)
             {
                 ViewModel = model;
                 this.Opened += OnOpenedForm;
+                model.DataGridChanged += OnGridChanged;
             }
             else
             {
                 this.Close();
                 Environment.Exit(1);
             }
+        }
+
+        private void OnGridChanged(object? sender, EventArgs e)
+        {
+            dataGrid.RefreshData();
         }
 
         private void OnOpenedForm(object sender, EventArgs e)

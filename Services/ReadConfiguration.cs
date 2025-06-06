@@ -10,13 +10,18 @@ namespace ApiTask.Services
             .AddUserSecrets<Program>()
             .Build();
 
-        public static string getValueByKey(string key)
+        public static string GetValueByKeyFromSecrets(string key)
         {
             if (configuration[key] == null)
             {
                 throw new ArgumentNullException(ErrorMessage);
             }
             return configuration[key];
+        }
+
+        public static string GetValueByKeyFromConfiguration(string key)
+        {
+            return System.Configuration.ConfigurationManager.AppSettings[key];
         }
     }
 }
