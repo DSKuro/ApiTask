@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<mx:MxWindow xmlns="https://github.com/avaloniaui"
 		xmlns:services="using:ApiTask.Services"
 		xmlns:dialogues="using:ApiTask.Services.Dialogues"
 		dialogues:DialogueManager.Register="{Binding}"
@@ -8,17 +8,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
         xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:mx="https://schemas.eremexcontrols.net/avalonia"
+		xmlns:mxb="https://schemas.eremexcontrols.net/avalonia/bars"
+		xmlns:mxe="https://schemas.eremexcontrols.net/avalonia/editors"
+		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ApiTask.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="ApiTask">
 
-    <Design.DataContext>
+    <mx:MxWindow.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
-    </Design.DataContext>
+	</mx:MxWindow.DataContext>
 
 	<Interaction.Behaviors>
 		<EventTriggerBehavior EventName="Opened">
@@ -26,7 +29,25 @@
 		</EventTriggerBehavior>
 	</Interaction.Behaviors>
 
-	<StackPanel Margin="20">
+	<mxb:ToolbarManager IsWindowManager="True">
+		<Grid RowDefinitions="Auto, *, Auto, *, Auto" ColumnDefinitions="Auto, *, Auto">
+			<mxb:ToolbarContainerControl DockType="Top" Grid.ColumnSpan="3">
+				<mxb:Toolbar x:Name="MainMenu" ToolbarName="Main Menu" StretchToolbar="True"
+							 AllowDragToolbar="False" ShowCustomizationButton="False">
+					<mxb:ToolbarButtonItem 
+						Header="Open"
+						Command="{Binding OpenFileCommand}"
+						Glyph="{SvgImage '/Assets/open-folder.svg'}"
+						GlyphSize="20,20"
+						Category="Main Menu"
+						ToolTip.Tip="Открыть файл"
+						/>
+				</mxb:Toolbar>
+			</mxb:ToolbarContainerControl>
+		</Grid>
+	</mxb:ToolbarManager>
+
+	<!--<StackPanel Margin="20">
 		<Button>Press me</Button>
 		<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
@@ -37,6 +58,6 @@
 				</EventTriggerBehavior>
 			</Interaction.Behaviors>
 		</Button>
-	</StackPanel>
+	</StackPanel>-->
 	
-</Window>
+</mx:MxWindow>

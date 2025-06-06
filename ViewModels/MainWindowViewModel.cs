@@ -31,7 +31,7 @@ namespace ApiTask.ViewModels
         public string Greeting { get; set; } = "Welcome to Avalonia";
 
         [RelayCommand]
-        private async Task Click()
+        private async Task OpenFile()
         {
             await GetMaterialData();
         }
