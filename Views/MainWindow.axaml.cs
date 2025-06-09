@@ -1,6 +1,11 @@
 using ApiTask.ViewModels;
 using Avalonia.Controls;
+using Avalonia.Data.Converters;
+using Eremex.AvaloniaUI.Controls.Utils;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ApiTask.Views
 {
@@ -11,6 +16,7 @@ namespace ApiTask.Views
         public MainWindow()
         {
             InitializeComponent();
+
         }
 
         protected override void OnOpened(EventArgs e)
@@ -36,7 +42,7 @@ namespace ApiTask.Views
 
         private void OnGridChanged(object? sender, EventArgs e)
         {
-            dataGrid.RefreshData();
+            //dataGrid.RefreshData();
         }
 
         private void OnOpenedForm(object sender, EventArgs e)
@@ -46,5 +52,13 @@ namespace ApiTask.Views
                 ViewModel.ClosingRequest += (sender, e) => this.Close();
             }
         }
+    }
+    public static class DebugConverters
+    {
+        public static readonly IValueConverter TypeConverter = new FuncValueConverter<object, string>(
+            x => x?.GetType().FullName ?? "NULL");
+
+        public static readonly IValueConverter PropertiesConverter = new FuncValueConverter<object, IEnumerable<string>>(
+            x => x?.GetType().GetProperties().Select(p => $"{p.Name} ({p.PropertyType.Name})") ?? Enumerable.Empty<string>());
     }
 }

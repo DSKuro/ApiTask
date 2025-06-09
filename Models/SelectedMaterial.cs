@@ -8,6 +8,7 @@ namespace ApiTask.Models
         public string Name { get; set; }
         public string Code { get; set; }
         public float Price { get; set; }
+        public string Url { get; set; }
         public Dictionary<string, string> Attributes { get; set; }
 
         public SelectedMaterial(Materials material)
@@ -20,6 +21,7 @@ namespace ApiTask.Models
             this.Name = material.MaterialAttribute.Name;
             this.Code = material.MaterialAttribute.Code;
             this.Price = material.MaterialAttribute.Price;
+            this.Url = material.MaterialAttribute.Url;
             this.Attributes = material.MaterialAttribute.Attributes;
         }
     }

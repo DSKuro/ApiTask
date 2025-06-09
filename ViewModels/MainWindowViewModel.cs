@@ -2,13 +2,17 @@
 using ApiTask.Services;
 using ApiTask.Services.Dialogues;
 using ApiTask.Services.Exceptions;
+using Avalonia.Data.Converters;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DynamicData.Binding;
+using Eremex.AvaloniaUI.Controls.DataControl.Visuals;
 using System;  
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,17 +25,34 @@ namespace ApiTask.ViewModels
         private static readonly string AuthHeader = "header";
         private static readonly string MaterialSite = "material";
         private static readonly string FileDialogueTitle = "Выберите файл:";
+        private static readonly string Explorer = "explorer.exe";
+        private static readonly string SiteError = "Ошибка при открытии страницы товара";
 
         private Token AccessToken;
 
+        public int SelectedRowIndex { get; set; }
         public event EventHandler? DataGridChanged;
-
-        [ObservableProperty]
-        public string greeting = "Welcome to Avalonia!";
 
         [ObservableProperty]
         ObservableCollection<SelectedMaterial> selectedMaterials =
             new ObservableCollection<SelectedMaterial>(new List<SelectedMaterial>());
+
+        [RelayCommand]
+        public async Task OnTransitionButtonClicked()
+        {
+            await TransitionButtonClickedImpl();
+        }
+
+        private async Task TransitionButtonClickedImpl()
+        {
+            try
+            {
+                Process.Start(Explorer, SelectedMaterials[SelectedRowIndex].Url);
+            }
+            catch (Exception ex) {
+                await MessageBoxHelper(SiteError, ErrorCallback);
+            }
+        }
 
         [RelayCommand]
         private async Task OpenFile()
@@ -145,10 +166,5 @@ namespace ApiTask.ViewModels
             this.OnClosingRequest();
             Environment.Exit(1);
         }
-    }
-
-    public class Test
-    {
-        public string test { get; set; }
     }
 }
