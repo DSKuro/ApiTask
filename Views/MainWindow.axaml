@@ -8,6 +8,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+		xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
         xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
         xmlns:mx="https://schemas.eremexcontrols.net/avalonia"
 		xmlns:mxb="https://schemas.eremexcontrols.net/avalonia/bars"
@@ -50,22 +51,41 @@
 				</mxb:ToolbarContainerControl>
 			</Grid>
 		</mxb:ToolbarManager>
-
-		<mxdg:DataGridControl x:Name="dataGrid" ShowGroupPanel="False" Name="dataGrid"
-							  ItemsSource="{Binding SelectedMaterials}"
-							  FocusedRowIndex="{Binding SelectedRowIndex}"
-							   HorizontalAlignment="Stretch" 
-			AutoGenerateColumns="False" BorderThickness="1,1">
-			
-			<mxdg:DataGridControl.Columns>
+		<DockPanel DockPanel.Dock="Left">
+			<ScrollViewer>
+				<Border BoxShadow="5 5 10 0 DarkGray" BorderThickness="0, 1, 1, 1" BorderBrush="#CCCCCC" Height="600" Width="300">
+					<StackPanel>
+						<Border BoxShadow="5 5 10 0 DarkGray" BorderThickness="0, 0, 0, 1" BorderBrush="#CCCCCC" Height="30">
+							<TextBlock Padding="5, 0, 0, 0" FontFamily="Avalonia.Fonts.Inter" FontSize="12" FontWeight="DemiBold" VerticalAlignment="Center" Text="Параметры"/>
+						</Border>
+						<ListBox Height="300" ItemsSource="{Binding Details}">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock TextWrapping="Wrap" Text="{Binding}"/>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+						<Image Height="250" asyncImageLoader:ImageLoader.Source="{Binding Url}"/>
+					</StackPanel>
+				</Border>
+			</ScrollViewer>
+			<mxdg:DataGridControl AllowSorting="False" x:Name="mainGrid" ShowGroupPanel="False" Name="mainGrid"
+					  ItemsSource="{Binding SelectedMaterials}"
+					  FocusedRowIndex="{Binding SelectedRowIndex}"
+					  AutoGenerateColumns="False"
+					  BorderThickness="1,1"
+					  Height="600">
 				<mxdg:GridColumn FieldName="Code" Header="Код" Width="*" MinWidth="50">
+					<mxdg:GridColumn.EditorProperties>
+						<mxe:TextEditorProperties HorizontalContentAlignment="Left" TextWrapping="Wrap"/>
+					</mxdg:GridColumn.EditorProperties>
 					<mxdg:GridColumn.CellTemplate>
-						<DataTemplate DataType="{x:Type mxdcv:CellData}">
+						<DataTemplate DataType="{x:Type mxdcv:CellData}" x:CompileBindings="False">
 							<StackPanel Orientation="Horizontal">
-								<Button Focusable="False" 
+								<Button Focusable="False" BorderBrush="Transparent" Background="Transparent"
 										Command="{Binding DataContext.OnTransitionButtonClicked,
-										ElementName=dataGrid}}">
-									<Image Width="20" Height="20" Source="{SvgImage '/Assets/open-folder.svg'}"/>
+										 ElementName=mainGrid}">
+									<Image Width="20" Height="20" Source="{SvgImage '/Assets/link.svg'}"/>
 								</Button>
 								<TextBlock VerticalAlignment="Center" Text="{Binding Value}"/>
 							</StackPanel>
@@ -83,7 +103,7 @@
 						<mxe:TextEditorProperties HorizontalContentAlignment="Left" TextWrapping="Wrap"/>
 					</mxdg:GridColumn.EditorProperties>
 				</mxdg:GridColumn>
-			</mxdg:DataGridControl.Columns>
-		</mxdg:DataGridControl>
+			</mxdg:DataGridControl>
+		</DockPanel>
 	</StackPanel>
 </mx:MxWindow>

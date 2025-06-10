@@ -2,17 +2,16 @@
 using ApiTask.Services;
 using ApiTask.Services.Dialogues;
 using ApiTask.Services.Exceptions;
-using Avalonia.Data.Converters;
+using Avalonia;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DynamicData.Binding;
-using Eremex.AvaloniaUI.Controls.DataControl.Visuals;
+using Eremex.AvaloniaUI.Controls.DataGrid;
 using System;  
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -20,22 +19,41 @@ namespace ApiTask.ViewModels
 {
     public partial class MainWindowViewModel : ClosableViewModel
     {
-        private static readonly string Key = "api";
-        private static readonly string AuthSite = "auth";
-        private static readonly string AuthHeader = "header";
-        private static readonly string MaterialSite = "material";
         private static readonly string FileDialogueTitle = "Выберите файл:";
         private static readonly string Explorer = "explorer.exe";
         private static readonly string SiteError = "Ошибка при открытии страницы товара";
 
-        private Token AccessToken;
-
         public int SelectedRowIndex { get; set; }
-        public event EventHandler? DataGridChanged;
 
         [ObservableProperty]
         ObservableCollection<SelectedMaterial> selectedMaterials =
             new ObservableCollection<SelectedMaterial>(new List<SelectedMaterial>());
+
+        [ObservableProperty]
+        string url;
+
+        [ObservableProperty]
+        ObservableCollection<string> details = new ObservableCollection<string>();
+
+        public void OnSelectionPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == DataGridControl.FocusedRowIndexProperty && e.OldValue != e.NewValue
+                && (int) e.NewValue >= 0)
+            {
+                ClearDetails();
+                SetNewDetails(SelectedMaterials[SelectedRowIndex].Attributes,
+                   SelectedMaterials[SelectedRowIndex].ThumbnailUrl);
+            }
+        }
+
+        private void SetNewDetails(List<string> attributes, string imageUrl)
+        {
+            foreach (string attribute in attributes)
+            {
+                Details.Add(attribute);
+            }
+            Url = imageUrl;
+        }
 
         [RelayCommand]
         public async Task OnTransitionButtonClicked()
@@ -64,7 +82,7 @@ namespace ApiTask.ViewModels
         {
             try
             {
-                await GetMaterialDataImpl();
+                await GetMaterialDataAuxiliary();
             }
             catch (HttpException ex)
             {
@@ -74,36 +92,27 @@ namespace ApiTask.ViewModels
             {
                 await MessageBoxHelper("Неправильно задан ключ", ErrorCallback);
             }
+            catch (IOException ex)
+            {
+                await MessageBoxHelper("Неправильный формат файла Excel", ErrorCallback);
+            }
             catch (InvalidOperationException ex)
             {
                 return;
             }
         }
 
-        private async Task GetMaterialDataImpl()
+        private async Task GetMaterialDataAuxiliary()
         {
+            ClearDetails();
             string path = await GetAbsolutePathFile();
-            List<string> codes = ExcelParser.GetDataFromFile(path);
-            await GetAllMaterials(codes);
+            await MaterialsProcess.GetMaterialDataImpl(SelectedMaterials, path);
         }
 
-        private async Task GetAllMaterials(List<string> codes) 
+        private void ClearDetails()
         {
-            SelectedMaterials.Clear();
-            string site = ReadConfiguration.GetValueByKeyFromConfiguration(MaterialSite);
-            foreach (string code in codes)
-            {
-                Materials material = (Materials)await Http.GetDataWithJSON(GetMaterialPath(site, code),
-                typeof(Materials));
-                SelectedMaterials.Add(new SelectedMaterial(material));
-            }
-        }
-
-        private Http.QueryBuilder GetMaterialPath(string uri, string code)
-        {
-            Http.QueryBuilder path = new Http.QueryBuilder(uri);
-            path.SetQuery("code", code);
-            return path;
+            Details.Clear();
+            Url = null;
         }
 
         private async Task<string?> GetAbsolutePathFile()
@@ -123,7 +132,7 @@ namespace ApiTask.ViewModels
         {
             try
             {
-                await ApplyTokenImpl();
+                await AccessTokenProcess.ApplyTokenImpl();
             }
             catch (HttpException ex)
             {
@@ -133,32 +142,6 @@ namespace ApiTask.ViewModels
             {
                 await MessageBoxHelper("Неправильно задан ключ", ErrorCallback);
             }
-        }
-
-        private async Task ApplyTokenImpl()
-        {
-            await GetToken();
-            Http.AddHeader(ReadConfiguration.GetValueByKeyFromSecrets(AuthHeader), AccessToken.AccessToken);
-        }
-
-        private async Task GetToken()
-        {
-            (string apiKey, string authKey) = GetKeysFromConfig();
-            AccessToken = (Token)await Http.GetDataWithJSON(GetFullTokenPath(authKey, apiKey), typeof(Token));
-        }
-
-        private Http.QueryBuilder GetFullTokenPath(string uri, string param)
-        {
-            Http.QueryBuilder path = new Http.QueryBuilder(uri);
-            path.SetParam(param);
-            return path;
-        }
-
-        private (string, string) GetKeysFromConfig()
-        {
-            string apiKey = ReadConfiguration.GetValueByKeyFromSecrets(Key);
-            string authKey = ReadConfiguration.GetValueByKeyFromConfiguration(AuthSite);
-            return (apiKey, authKey);
         }
 
         private void ErrorCallback()
