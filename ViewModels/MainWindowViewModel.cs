@@ -94,7 +94,7 @@ namespace ApiTask.ViewModels
             }
             catch (IOException ex)
             {
-                await MessageBoxHelper("Неправильный формат файла Excel", ErrorCallback);
+                await MessageBoxHelper("Неправильный формат файла Excel", null);
             }
             catch (InvalidOperationException ex)
             {
@@ -105,6 +105,7 @@ namespace ApiTask.ViewModels
         private async Task GetMaterialDataAuxiliary()
         {
             ClearDetails();
+            SelectedMaterials.Clear();
             string path = await GetAbsolutePathFile();
             await MaterialsProcess.GetMaterialDataImpl(SelectedMaterials, path);
         }

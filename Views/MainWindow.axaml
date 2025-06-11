@@ -27,6 +27,7 @@
         <vm:MainWindowViewModel/>
 	</mx:MxWindow.DataContext>
 
+
 	<Interaction.Behaviors>
 		<EventTriggerBehavior EventName="Opened">
 			<InvokeCommandAction Command="{Binding OpenFormCommand}" />
@@ -42,21 +43,25 @@
 						<mxb:ToolbarButtonItem
 							Header="Open"
 							Command="{Binding OpenFileCommand}"
-							Glyph="{SvgImage '/Assets/open-folder.svg'}"
-							GlyphSize="20,20"
 							Category="Main Menu"
-							ToolTip.Tip="Открыть файл"
-						/>
+							ToolTip.Tip="Открыть файл">
+								<mxb:ToolbarButtonItem.GlyphTemplate>
+									<DataTemplate>
+										<Svg Width="20" Height="20" Path="/Assets/open-folder.svg"
+											 Css="{DynamicResource SvgClass}"  />
+									</DataTemplate>
+								</mxb:ToolbarButtonItem.GlyphTemplate>
+							</mxb:ToolbarButtonItem>
 					</mxb:Toolbar>
 				</mxb:ToolbarContainerControl>
 			</Grid>
 		</mxb:ToolbarManager>
 		<DockPanel DockPanel.Dock="Left">
 			<ScrollViewer>
-				<Border BoxShadow="5 5 10 0 DarkGray" BorderThickness="0, 1, 1, 1" BorderBrush="#CCCCCC" Height="600" Width="300">
+				<Border BoxShadow="5 5 10 0 DarkGray" BorderThickness="0, 1, 1, 1" BorderBrush="{DynamicResource BorderBrush}" Height="600" Width="300">
 					<StackPanel>
-						<Border BoxShadow="5 5 10 0 DarkGray" BorderThickness="0, 0, 0, 1" BorderBrush="#CCCCCC" Height="30">
-							<TextBlock Padding="5, 0, 0, 0" FontFamily="Avalonia.Fonts.Inter" FontSize="12" FontWeight="DemiBold" VerticalAlignment="Center" Text="Параметры"/>
+						<Border BoxShadow="5 5 10 0 DarkGray" BorderThickness="0, 0, 0, 1" BorderBrush="{DynamicResource BorderBrush}" Height="30">
+							<TextBlock Padding="5, 0, 0, 0" Foreground="{DynamicResource FontColor}"  FontFamily="Avalonia.Fonts.Inter" FontSize="12" FontWeight="DemiBold" VerticalAlignment="Center" Text="Параметры"/>
 						</Border>
 						<ListBox Height="300" ItemsSource="{Binding Details}">
 							<ListBox.ItemTemplate>
@@ -74,6 +79,7 @@
 					  FocusedRowIndex="{Binding SelectedRowIndex}"
 					  AutoGenerateColumns="False"
 					  BorderThickness="1,1"
+					  AllowDragDrop="False"
 					  Height="600">
 				<mxdg:GridColumn FieldName="Code" Header="Код" Width="*" MinWidth="50">
 					<mxdg:GridColumn.EditorProperties>
@@ -85,7 +91,8 @@
 								<Button Focusable="False" BorderBrush="Transparent" Background="Transparent"
 										Command="{Binding DataContext.OnTransitionButtonClicked,
 										 ElementName=mainGrid}">
-									<Image Width="20" Height="20" Source="{SvgImage '/Assets/link.svg'}"/>
+									<Svg Width="20" Height="20" Path="/Assets/link.svg"
+											 Css="{DynamicResource SvgClass}"  />
 								</Button>
 								<TextBlock VerticalAlignment="Center" Text="{Binding Value}"/>
 							</StackPanel>

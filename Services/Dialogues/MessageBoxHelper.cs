@@ -26,7 +26,7 @@ namespace ApiTask.Services.Dialogues
                 GetMessageBoxStandard(title, content,
                    buttons);
 
-                await box.ShowWindowDialogAsync(window);
+                return await box.ShowWindowDialogAsync(window);
             }
 
             throw new ArgumentNullException(nameof(topLevel));
