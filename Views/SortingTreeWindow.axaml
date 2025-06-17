@@ -1,0 +1,36 @@
+<mx:MxWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mx="https://schemas.eremexcontrols.net/avalonia"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="400"
+		Width="450" Height="400"
+        x:Class="ApiTask.SortingTreeWindow"
+		Icon="/Assets/avalonia-logo.ico"
+			 xmlns:vm="using:ApiTask.ViewModels"
+        Title="Параметры сортировки">
+
+	<mx:MxWindow.DataContext>
+		<vm:MainWindowViewModel/>
+	</mx:MxWindow.DataContext>
+	
+	<StackPanel>
+		<ScrollViewer>
+			<Border Margin="5, 5, 5, 0" BorderThickness="1, 1, 1, 1" BorderBrush="{DynamicResource BorderBrush}" Height="300">
+				<ListBox x:Name="parameters" x:DataType="vm:MainWindowViewModel" ItemsSource="{Binding CheckBoxes}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<CheckBox></CheckBox>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Border>
+		</ScrollViewer>
+		<StackPanel Orientation="Horizontal" Margin="7, 7, 0, 0">
+			<Button Margin="0, 0, 10, 0">Выделить всё</Button>
+			<Button Margin="0, 0, 90, 0">Снять всё</Button>
+			<Button MinWidth="60" Margin="0, 0, 10, 0">ОК</Button>
+			<Button Margin="0, 0, 5, 0">Отмена</Button>
+		</StackPanel>
+	</StackPanel>
+</mx:MxWindow>

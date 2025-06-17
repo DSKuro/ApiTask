@@ -16,7 +16,6 @@ namespace ApiTask.Services
                 Connection = new SqlConnection(ConnectionUrl);
             }
             await Connection.OpenAsync();
-            Console.WriteLine("Подключение открыто");
         }
 
         public static async Task CloseConnection()

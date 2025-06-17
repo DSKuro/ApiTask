@@ -3,6 +3,7 @@ using ApiTask.Services;
 using ApiTask.Services.Dialogues;
 using ApiTask.Services.Exceptions;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -37,6 +38,43 @@ namespace ApiTask.ViewModels
 
         [ObservableProperty]
         ObservableCollection<string> details = new ObservableCollection<string>();
+
+        [ObservableProperty]
+        ObservableCollection<City> cities = new ObservableCollection<City>();
+
+        [ObservableProperty]
+        public ObservableCollection<CheckBox> checkBoxes = new ObservableCollection<CheckBox>();
+
+        public MainWindowViewModel()
+        {
+            Cities.Add(new City("test1"));
+            Cities.Add(new City("test2"));
+            Cities.Add(new City("test3"));
+
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+            CheckBoxes.Add(new CheckBox());
+
+
+        }
+
+        public async Task OnSortingButtonClick()
+        {
+            await DialogueFormHelper.ShowFormAsDialogue(this, new SortingTreeWindow() { DataContext = this }); 
+        }
 
         public void OnSelectionPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
@@ -177,4 +215,11 @@ namespace ApiTask.ViewModels
             Environment.Exit(1);
         }
     }
+
+    public class City
+    {
+        public City(string name) { Name = name; }
+        public string Name { get; set; }
+    }
+
 }
