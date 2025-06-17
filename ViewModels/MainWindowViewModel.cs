@@ -7,6 +7,7 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Eremex.AvaloniaUI.Controls.DataGrid;
+using Microsoft.Data.SqlClient;
 using System;  
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,6 +23,8 @@ namespace ApiTask.ViewModels
         private static readonly string FileDialogueTitle = "Выберите файл:";
         private static readonly string Explorer = "explorer.exe";
         private static readonly string SiteError = "Ошибка при открытии страницы товара";
+        private static readonly string DatabaseKey = "db";
+        private static readonly string KeyMessage = "Неправильно задан ключ";
 
         public int SelectedRowIndex { get; set; }
 
@@ -124,9 +127,32 @@ namespace ApiTask.ViewModels
         }
 
         [RelayCommand]
+        private async Task CloseForm()
+        {
+            await DbConnection.CloseConnection();
+        }
+
+        [RelayCommand]
         private async Task OpenForm()
         {
             await ApplyToken();
+            await OpenDbConnection();
+        }
+
+        private async Task OpenDbConnection()
+        {
+            try
+            {
+                await DbConnection.OpenConnection(ReadConfiguration.GetValueByKeyFromConfiguration(DatabaseKey));
+            }
+            catch (SqlException e)
+            {
+                await MessageBoxHelper(e.Message, ErrorCallback);
+            }
+            catch (ArgumentNullException e)
+            {
+                await MessageBoxHelper(KeyMessage, ErrorCallback);
+            }
         }
 
         private async Task ApplyToken()
@@ -141,7 +167,7 @@ namespace ApiTask.ViewModels
             }
             catch (ArgumentNullException e)
             {
-                await MessageBoxHelper("Неправильно задан ключ", ErrorCallback);
+                await MessageBoxHelper(KeyMessage, ErrorCallback);
             }
         }
 

@@ -32,6 +32,9 @@
 		<EventTriggerBehavior EventName="Opened">
 			<InvokeCommandAction Command="{Binding OpenFormCommand}" />
 		</EventTriggerBehavior>
+		<EventTriggerBehavior EventName="Closing">
+			<InvokeCommandAction Command="{Binding CloseFormCommand}" />
+		</EventTriggerBehavior>
 	</Interaction.Behaviors>
 
 	<StackPanel Grid.Row="1" Grid.Column="1">
