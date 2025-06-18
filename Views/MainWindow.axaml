@@ -122,11 +122,16 @@
 						<Svg Width="20" Height="20" Path="/Assets/tree.svg"
 								 Css="{DynamicResource SvgFill}"  />
 					</Button>
-					<mxtl:TreeViewControl
-					  Name="treeView"
-					  ItemsSource="{Binding Cities}"
-					  DataFieldName="Name"
-					  SearchPanelDisplayMode="Always"/>
+					<ScrollViewer>
+						<mxtl:TreeViewControl
+						  Name="treeView"
+						  ItemsSource="{Binding Cities}"
+						  DataFieldName="Name"
+						  SearchPanelDisplayMode="Always"
+						  Height="600"
+						  />
+					</ScrollViewer>
+
 				</StackPanel>
 			</Border>
 		</Grid>

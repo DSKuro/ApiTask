@@ -2,11 +2,12 @@
 using ApiTask.Services;
 using ApiTask.Services.Dialogues;
 using ApiTask.Services.Exceptions;
+using ApiTask.Services.Messages;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Eremex.AvaloniaUI.Controls.DataGrid;
 using Microsoft.Data.SqlClient;
 using System;  
@@ -26,6 +27,8 @@ namespace ApiTask.ViewModels
         private static readonly string SiteError = "Ошибка при открытии страницы товара";
         private static readonly string DatabaseKey = "db";
         private static readonly string KeyMessage = "Неправильно задан ключ";
+        private static readonly string CodesSql = "SELECT TOP 1000 [Code] FROM [D:\\API\\RAMCUBE\\RAMCUBEV3\\DKC_DATA.MDF].[dbo].[tblDevices]";
+        private static readonly string ParametersSql = "SELECT [deviceParameterName] FROM [D:\\API\\RAMCUBE\\RAMCUBEV3\\DKC_DATA.MDF].[dbo].[tblDeviceParameters]";
 
         public int SelectedRowIndex { get; set; }
 
@@ -42,38 +45,9 @@ namespace ApiTask.ViewModels
         [ObservableProperty]
         ObservableCollection<City> cities = new ObservableCollection<City>();
 
-        [ObservableProperty]
-        public ObservableCollection<CheckBox> checkBoxes = new ObservableCollection<CheckBox>();
-
-        public MainWindowViewModel()
-        {
-            Cities.Add(new City("test1"));
-            Cities.Add(new City("test2"));
-            Cities.Add(new City("test3"));
-
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-            CheckBoxes.Add(new CheckBox());
-
-
-        }
-
         public async Task OnSortingButtonClick()
         {
-            await DialogueFormHelper.ShowFormAsDialogue(this, new SortingTreeWindow() { DataContext = this }); 
+            var sortingTree = await WeakReferenceMessenger.Default.Send(new TreeDialogueMessage());
         }
 
         public void OnSelectionPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -173,8 +147,29 @@ namespace ApiTask.ViewModels
         [RelayCommand]
         private async Task OpenForm()
         {
+            await OnOpenForm();
+        }
+        
+        private async Task OnOpenForm()
+        {
             await ApplyToken();
             await OpenDbConnection();
+            //await GetCodes();
+            await GetParameters();
+        }
+
+        private async Task GetParameters()
+        {
+            SortingTreeWindowViewModel.SetParameters(await DbConnection.GetData(ParametersSql));
+        }
+
+        private async Task GetCodes()
+        {
+            List<string> test = await DbConnection.GetData(CodesSql);
+            foreach (string testitem in test)
+            {
+                Cities.Add(new City(testitem));
+            }
         }
 
         private async Task OpenDbConnection()

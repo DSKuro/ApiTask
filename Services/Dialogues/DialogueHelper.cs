@@ -21,6 +21,5 @@ namespace ApiTask.Services.Dialogues
 
             return topLevel;
         }
-
     }
 }
