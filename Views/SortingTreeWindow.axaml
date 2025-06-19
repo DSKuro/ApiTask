@@ -18,12 +18,6 @@
 		<vm:SortingTreeWindowViewModel/>
 	</mx:MxWindow.DataContext>
 
-	<Interaction.Behaviors>
-		<EventTriggerBehavior EventName="Closing">
-			<InvokeCommandAction Command="{Binding CloseFormCommand}" />
-		</EventTriggerBehavior>
-	</Interaction.Behaviors>
-
 	<Grid ColumnDefinitions="*" RowDefinitions="2*, *">
 		<Border Grid.Column="0" Grid.Row="0" Margin="5, 37, 5, 0" BorderThickness="1, 1, 1, 1" BorderBrush="{DynamicResource BorderBrush}" Height="300">
 			<ListBox x:Name="parameters" ItemsSource="{Binding CheckBoxes}">

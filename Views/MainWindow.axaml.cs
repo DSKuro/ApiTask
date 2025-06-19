@@ -3,7 +3,6 @@ using ApiTask.ViewModels;
 using CommunityToolkit.Mvvm.Messaging;
 using Eremex.AvaloniaUI.Controls.Common;
 using System;
-using System.Collections.Generic;
 
 namespace ApiTask.Views
 {
@@ -21,12 +20,26 @@ namespace ApiTask.Views
         {
             WeakReferenceMessenger.Default.Register<MainWindow, TreeDialogueMessage>(this, (w, m) =>
             {
-                SortingTreeWindow dialogue = new SortingTreeWindow
-                {
-                    DataContext = new SortingTreeWindowViewModel()
-                };
-                m.Reply(dialogue.ShowDialog<List<string>>(w));
+                SortingTreeWindowViewModel model = GetModel();
+                MessageHandler(model, w, m);
+                
             });
+        }
+
+        private SortingTreeWindowViewModel GetModel()
+        {
+            SortingTreeWindowViewModel model = new SortingTreeWindowViewModel();
+            model.SetParameters(ViewModel.SortingTreeState);
+            return model;
+        }
+
+        private void MessageHandler(SortingTreeWindowViewModel model, MainWindow w, TreeDialogueMessage m)
+        {
+            SortingTreeWindow dialogue = new SortingTreeWindow
+            {
+                DataContext = model
+            };
+            m.Reply(dialogue.ShowDialog<bool>(w));
         }
 
         protected override void OnOpened(EventArgs e)

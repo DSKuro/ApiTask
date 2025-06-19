@@ -1,36 +1,30 @@
-﻿using ApiTask.Services.Messages;
+﻿using ApiTask.Services;
+using ApiTask.Services.Messages;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace ApiTask.ViewModels
 {
     public partial class SortingTreeWindowViewModel : ClosableViewModel
     {
-        private static List<bool?> SavedValues = new List<bool?>();
-        private bool IsSave;
+        private SortingTreeMemento State;
 
         [ObservableProperty]
-        public static ObservableCollection<CheckBox> checkBoxes = new ObservableCollection<CheckBox>();
+        public ObservableCollection<CheckBox> checkBoxes = new ObservableCollection<CheckBox>();
 
-        [RelayCommand]
-        public void CloseForm()
+        public void SetParameters(SortingTreeMemento memento)
         {
-            if (!IsSave)
-            {
-                RestoreStates();
-            }
+            State = memento;
+            RestoreState();
         }
 
-        public static void SetParameters(List<string> parameters)
+        private void RestoreState()
         {
-            foreach (string parameter in parameters)
+            for (int i = 0; i < State.Content.Count; i++)
             {
-                checkBoxes.Add(new CheckBox() { Content = parameter });
-                SavedValues.Add(false);
+                CheckBoxes.Add(new CheckBox() { Content = State.Content[i], IsChecked = State.States[i] });
             }
         }
 
@@ -54,35 +48,24 @@ namespace ApiTask.ViewModels
 
         public void OnCancelButtonClick()
         {
-            WeakReferenceMessenger.Default.Send(new TreeDialogueCloseMessage(new List<string>()));
-        }
-
-        private void RestoreStates()
-        {
-            for (int i = 0; i < CheckBoxes.Count; i++) 
-            {
-                CheckBoxes[i].IsChecked = SavedValues[i];
-            }
+            WeakReferenceMessenger.Default.Send(new TreeDialogueCloseMessage(false));
         }
 
         public void OnOkButtonClick()
         {
-            IsSave = true;
-            WeakReferenceMessenger.Default.Send(new TreeDialogueCloseMessage(GetStates()));
+            SaveState();
+            WeakReferenceMessenger.Default.Send(new TreeDialogueCloseMessage(true));
         }
 
-        private List<string> GetStates()
+        private void SaveState()
         {
-            List<string> states = new List<string>();
             for (int i = 0; i < CheckBoxes.Count; i++)
             {
-                if (!CheckBoxes[i].IsChecked == SavedValues[i])
+                if (!CheckBoxes[i].IsChecked == State.States[i])
                 {
-                    SavedValues[i] = CheckBoxes[i].IsChecked;
-                    states.Add((string)CheckBoxes[i].Content);
-                } 
+                    State.States[i] = CheckBoxes[i].IsChecked;
+                }
             }
-            return states;
         }
     }
 }

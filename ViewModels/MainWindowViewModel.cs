@@ -27,10 +27,12 @@ namespace ApiTask.ViewModels
         private static readonly string SiteError = "Ошибка при открытии страницы товара";
         private static readonly string DatabaseKey = "db";
         private static readonly string KeyMessage = "Неправильно задан ключ";
-        private static readonly string CodesSql = "SELECT TOP 1000 [Code] FROM [D:\\API\\RAMCUBE\\RAMCUBEV3\\DKC_DATA.MDF].[dbo].[tblDevices]";
-        private static readonly string ParametersSql = "SELECT [deviceParameterName] FROM [D:\\API\\RAMCUBE\\RAMCUBEV3\\DKC_DATA.MDF].[dbo].[tblDeviceParameters]";
+        private static readonly string CodesSqlKey = "codes";
+        private static readonly string ParametersSqlKey = "parameters";
 
         public int SelectedRowIndex { get; set; }
+
+        public SortingTreeMemento SortingTreeState { get; private set; }
 
         [ObservableProperty]
         ObservableCollection<SelectedMaterial> selectedMaterials =
@@ -160,12 +162,14 @@ namespace ApiTask.ViewModels
 
         private async Task GetParameters()
         {
-            SortingTreeWindowViewModel.SetParameters(await DbConnection.GetData(ParametersSql));
+            SortingTreeState = new SortingTreeMemento(await DbConnection.GetData
+                (ReadConfiguration.GetValueByKeyFromConfiguration(ParametersSqlKey)));
         }
 
         private async Task GetCodes()
         {
-            List<string> test = await DbConnection.GetData(CodesSql);
+            List<string> test = await DbConnection.GetData
+                (ReadConfiguration.GetValueByKeyFromConfiguration(CodesSqlKey));
             foreach (string testitem in test)
             {
                 Cities.Add(new City(testitem));
@@ -176,7 +180,7 @@ namespace ApiTask.ViewModels
         {
             try
             {
-                await DbConnection.OpenConnection(ReadConfiguration.GetValueByKeyFromConfiguration(DatabaseKey));
+                await DbConnection.OpenConnection(ReadConfiguration.GetValueByKeyFromSecrets(DatabaseKey));
             }
             catch (SqlException e)
             {

@@ -17,7 +17,7 @@ public partial class SortingTreeWindow : MxWindow
         WeakReferenceMessenger.Default.Register<SortingTreeWindow, TreeDialogueCloseMessage>(this,
             static (window, message) =>
             {
-                window.Close(message.NewParameters);
+                window.Close(message.IsChanged);
             }
         );
     }

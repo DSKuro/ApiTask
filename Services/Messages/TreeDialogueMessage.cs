@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace ApiTask.Services.Messages
 {
-    public class TreeDialogueMessage : AsyncRequestMessage<List<string>>;
-    public class TreeDialogueCloseMessage(List<string> parameters)
+    public class TreeDialogueMessage : AsyncRequestMessage<bool>;
+    public class TreeDialogueCloseMessage(bool isChanged)
     {
-        public List<string> NewParameters { get; } = parameters; 
+        public bool IsChanged { get; set; } = isChanged;
     }
 }
