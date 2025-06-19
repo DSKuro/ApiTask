@@ -25,8 +25,7 @@ namespace ApiTask.Views
             WeakReferenceMessenger.Default.Register<MainWindow, TreeDialogueMessage>(this, (w, m) =>
             {
                 SortingTreeWindowViewModel model = GetModel();
-                MessageHandler(model, w, m);
-                
+                MessageHandler(model, w, m); 
             });
         }
 

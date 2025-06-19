@@ -3,6 +3,7 @@ using ApiTask.Services;
 using ApiTask.Services.Dialogues;
 using ApiTask.Services.Exceptions;
 using ApiTask.Services.Messages;
+using ApiTask.Services.ViewModelSubServices;
 using Avalonia;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -30,7 +31,7 @@ namespace ApiTask.ViewModels
         private static readonly string CodesSqlKey = "codes";
         private static readonly string ParametersSqlKey = "parameters";
 
-        private List<List<string>> MainData;
+        private List<string> CodesData = new List<string>();
         private List<List<string>> Params = new List<List<string>>();
 
         public int SelectedRowIndex { get; set; }
@@ -52,71 +53,120 @@ namespace ApiTask.ViewModels
 
         public async Task OnSortingButtonClick()
         {
+            await ProcessParameterChanging();
+        }
+
+        private async Task ProcessParameterChanging()
+        {
             bool isChanged = await WeakReferenceMessenger.Default.Send(new TreeDialogueMessage());
-            Categories.Clear();
-            List<string> nonCat = new List<string>();
-            List<string> cat = new List<string>();
-            List<List<string>> partial = new List<List<string>>();
-            for (int i = 0; i < SortingTreeState.ChangedParameters.Count; i++)
-            {
-                partial.Add(new List<string>());
-            }
             if (isChanged)
             {
-                Categories.Clear();
-                int param = 0;
-                for (int i = 0; i < Params.Count; i++)
+                UpdateTreeView();
+            }
+        }
+
+        private void UpdateTreeView()
+        {
+            Categories.Clear();
+            UpdateCategories();
+        }
+
+        private void UpdateCategories()
+        {
+            (List<string> nonCategorized, List<string> allCategorized,
+                List<List<string>> partialCategorized) = InitializeCategories();
+            DefineCategories(nonCategorized, allCategorized, partialCategorized);
+            UpdateCategoriesInBinding(nonCategorized, allCategorized, partialCategorized);
+        }
+
+        private (List<string>, List<string>, List<List<string>>) InitializeCategories()
+        {
+            List<string> nonCategorized = new List<string>();
+            List<string> allCategorized = new List<string>();
+            List<List<string>> partialCategorized = new List<List<string>>();
+            return (nonCategorized, allCategorized, partialCategorized);
+        }
+
+        private void DefineCategories(List<string> nonCategorized, List<string> allCategorized,
+            List<List<string>> partialCategorized)
+        {
+            int param = 0;
+            for (int i = 0; i < Params.Count; i++)
+            {
+                for (int j = 0; j < SortingTreeState.EnabledParameters.Count; j++)
                 {
-                   for (int j = 0; j < SortingTreeState.ChangedParameters.Count; j++)
-                   {
-                      
-                        if (Params[i].Contains(SortingTreeState.ChangedParameters[j]))
-                        {
-                            param++;
-                        }
-                   }
-                   if (param == 0)
-                   {
-                        nonCat.Add(MainData[0][i]);
-                   }
-                   else if (param == SortingTreeState.ChangedParameters.Count)
-                   {
-                        cat.Add(MainData[0][i]);
-                   }
-                   else
+
+                    if (Params[i].Contains(SortingTreeState.EnabledParameters[j]))
                     {
-                        partial[param].Add(MainData[0][i]);
+                        param++;
                     }
-                        param = 0;
-                   
                 }
-                CodeCategory nonCategory = new CodeCategory("Без категории");
-                CodeCategory allCategory = new CodeCategory("Все параметры");
-                List<CodeCategory> categories = new List<CodeCategory>();
-                foreach (string code in cat)
+                DefineCategoriesImpl(nonCategorized, allCategorized, partialCategorized, param, i);
+                param = 0;
+            }
+        }
+
+        private void DefineCategoriesImpl(List<string> nonCategorized, List<string> allCategorized,
+            List<List<string>> partialCategorized, int param, int i)
+        {
+            if (param == 0)
+            {
+                nonCategorized.Add(CodesData[i]);
+            }
+            else if (param == SortingTreeState.EnabledParameters.Count)
+            {
+                allCategorized.Add(CodesData[i]);
+            }
+            else
+            {
+                for (int j = 0; j < param; j++)
                 {
-                    allCategory.Codes.Add(new Codes(code));
+                    if (partialCategorized.Count < param)
+                    {
+                        partialCategorized.Add(new List<string>());
+                    }
+                    partialCategorized[j].Add(CodesData[i]);
                 }
 
-                foreach (string code in nonCat)
+            }
+        }
+
+        private void UpdateCategoriesInBinding(List<string> nonCategorized, List<string> allCategorized,
+            List<List<string>> partialCategorized)
+        {
+            if (nonCategorized.Count != 0)
+            {
+                CodeCategory nonCategory = new CodeCategory("Без категории");
+
+                foreach (string code in nonCategorized)
                 {
                     nonCategory.Codes.Add(new Codes(code));
                 }
-
-                for (int i =0; i < partial.Count; i++) 
-                {
-                    CodeCategory t = new CodeCategory($"Без параметра: {SortingTreeState.ChangedParameters[i]}");
-                    foreach (string code in partial[i])
-                    {
-                        t.Codes.Add(new Codes(code)); 
-                    }
-                    Categories.Add(t);
-                }
-
-
                 Categories.Add(nonCategory);
+            }
+
+            if (partialCategorized.Count != 0)
+            {
+
+                for (int i = 0; i < partialCategorized.Count; i++)
+                {
+                    CodeCategory category = new CodeCategory($"Без параметра: {SortingTreeState.EnabledParameters[i]}");
+                    foreach (string code in partialCategorized[i])
+                    {
+                        category.Codes.Add(new Codes(code));
+                    }
+                    Categories.Add(category);
+                }
+            }
+
+            if (allCategorized.Count != 0)
+            {
+                CodeCategory allCategory = new CodeCategory("Все параметры");
+                foreach (string code in allCategorized)
+                {
+                    allCategory.Codes.Add(new Codes(code));
+                }
                 Categories.Add(allCategory);
-                
             }
         }
 
@@ -222,31 +272,49 @@ namespace ApiTask.ViewModels
         
         private async Task OnOpenForm()
         {
+            await OnOpenFormImpl();
+        }
+
+        private async Task OnOpenFormImpl()
+        {
             await ApplyToken();
             await OpenDbConnection();
-            await GetCodes();
-            await GetParameters();
+            await GetDataFromDb();
+            SetCategories();
         }
 
-        private async Task GetParameters()
+        private async Task GetDataFromDb()
         {
-            List<List<string>> data = await DbConnection.GetData
-                (ReadConfiguration.GetValueByKeyFromConfiguration(ParametersSqlKey), 1);
-            SortingTreeState = new SortingTreeMemento(data[0]);
-        }
-
-        private async Task GetCodes()
-        {
-            MainData = await DbConnection.GetData
-                (ReadConfiguration.GetValueByKeyFromConfiguration(CodesSqlKey), 2);
-
-            for (int i = 0; i < MainData[1].Count; i++) 
+            try
             {
-                Params.Add(MainData[1][i].Split(',').ToList<string>());
+                await GetDataFromDbImpl();
             }
-            foreach (string testitem in MainData[0])
+            catch (SqlException e)
             {
-                 Categories.Add(new Codes(testitem));
+                await MessageBoxHelper(e.Message, ErrorCallback);
+            }
+        }
+
+        private async Task GetDataFromDbImpl()
+        {
+            ParseData(await DbDataProcess.GetCodes(CodesSqlKey));
+            SortingTreeState = await DbDataProcess.GetParameters(ParametersSqlKey);
+        }
+
+        private void ParseData(List<List<string>> data)
+        {
+            for (int i = 0; i < data[0].Count; i++)
+            {
+                CodesData.Add(data[0][i]);
+                Params.Add(data[1][i].Split(',').ToList<string>());
+            }
+        }
+
+        private void SetCategories()
+        {
+            foreach (string code in  CodesData)
+            {
+                Categories.Add(new Codes(code));
             }
         }
 

@@ -7,7 +7,7 @@ namespace ApiTask.Services
         public List<string> Content { get; set; }
         public List<bool?> States { get; set; } = new List<bool?>();
 
-        public List<string> ChangedParameters { get; set; }
+        public List<string> EnabledParameters { get; set; }
 
         public SortingTreeMemento(List<string> parameters) 
         {

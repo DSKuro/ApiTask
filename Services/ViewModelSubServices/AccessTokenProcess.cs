@@ -1,7 +1,7 @@
 ﻿using ApiTask.Models;
 using System.Threading.Tasks;
 
-namespace ApiTask.Services
+namespace ApiTask.Services.ViewModelSubServices
 {
     public static class AccessTokenProcess
     {

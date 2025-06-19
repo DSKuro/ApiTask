@@ -10,6 +10,7 @@ namespace ApiTask.ViewModels
 {
     public partial class SortingTreeWindowViewModel : ClosableViewModel
     {
+        private bool IsChanged = false;
         private SortingTreeMemento State;
 
         [ObservableProperty]
@@ -49,29 +50,41 @@ namespace ApiTask.ViewModels
 
         public void OnCancelButtonClick()
         {
-            WeakReferenceMessenger.Default.Send(new TreeDialogueCloseMessage(false));
+            WeakReferenceMessenger.Default.Send(new TreeDialogueCloseMessage(IsChanged));
         }
 
         public void OnOkButtonClick()
         {
             SaveState();
-            WeakReferenceMessenger.Default.Send(new TreeDialogueCloseMessage(true));
+            WeakReferenceMessenger.Default.Send(new TreeDialogueCloseMessage(IsChanged));
         }
 
         private void SaveState()
         {
+            State.EnabledParameters = SaveStateImpl();
+        }
+
+        private List<string> SaveStateImpl()
+        {
             List<string> changedParameters = new List<string>();
             for (int i = 0; i < CheckBoxes.Count; i++)
             {
-                if ((bool)CheckBoxes[i].IsChecked)
-                    changedParameters.Add((string)CheckBoxes[i].Content);
-                if (!CheckBoxes[i].IsChecked == State.States[i])
-                {
-                    
-                    State.States[i] = CheckBoxes[i].IsChecked;
-                }
+                SaveParameters(changedParameters, i);
             }
-            State.ChangedParameters = changedParameters;
+            return changedParameters;
+        }
+
+        private void SaveParameters(List<string> changedParameters, int i)
+        {
+            if ((bool)CheckBoxes[i].IsChecked)
+            {
+                changedParameters.Add((string)CheckBoxes[i].Content);
+            }
+            if (!CheckBoxes[i].IsChecked == State.States[i])
+            {
+                IsChanged = true;
+                State.States[i] = CheckBoxes[i].IsChecked;
+            }
         }
     }
 }
