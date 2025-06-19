@@ -1,8 +1,12 @@
+using ApiTask.Models;
 using ApiTask.Services.Messages;
 using ApiTask.ViewModels;
+using Avalonia.OpenGL;
 using CommunityToolkit.Mvvm.Messaging;
 using Eremex.AvaloniaUI.Controls.Common;
+using Eremex.AvaloniaUI.Controls.TreeList;
 using System;
+using System.Collections;
 
 namespace ApiTask.Views
 {
@@ -66,6 +70,27 @@ namespace ApiTask.Views
             ViewModel = model;
             mainGrid.DataContext = model;
             mainGrid.PropertyChanged += model.OnSelectionPropertyChanged;
+        }
+    }
+
+    public class MainTreeListChildrenSelector : ITreeListChildrenSelector
+    {
+        public bool HasChildren(object item)
+        {
+            if (item is CodeCategory category)
+            {
+                return category.Codes.Count > 0;
+            }
+            return false;
+        }
+
+        public IEnumerable? SelectChildren(object item)
+        {
+            if (item is CodeCategory category)
+            {
+                return category.Codes;
+            }
+            return null;
         }
     }
 }

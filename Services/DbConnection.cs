@@ -26,12 +26,13 @@ namespace ApiTask.Services
             }
         }
 
-        public static async Task<List<string>> GetData(string command) 
+        public static async Task<List<List<string>>> GetData(string command, int columnsCount) 
         {
-            List<string> codes = new List<string>();
+            List<List<string>> data = new List<List<string>>();
             SqlDataReader reader = await ExecuteCommand(command);
-            await ReadData(reader, codes);
-            return codes;
+            await ReadData(reader, data, columnsCount);
+            await reader.CloseAsync();
+            return data;
         }
 
         private static async Task<SqlDataReader> ExecuteCommand(string command)
@@ -40,15 +41,21 @@ namespace ApiTask.Services
             return await sqlCommand.ExecuteReaderAsync();
         }
 
-        private static async Task ReadData(SqlDataReader reader, List<string> codes)
+        private static async Task ReadData(SqlDataReader reader, List<List<string>> data, int columnsCount)
         {
             if (reader.HasRows)
             {
-                string column = reader.GetName(0);
+                for (int i = 0; i < columnsCount; i++)
+                {
+                    data.Add(new List<string>());
+                }
 
                 while (await reader.ReadAsync())
                 {
-                    codes.Add((string)reader.GetValue(0));
+                    for (int i = 0; i < columnsCount; i++)
+                    {
+                        data[i].Add((string)reader.GetValue(i));
+                    }
                 }
             }
         }

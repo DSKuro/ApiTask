@@ -16,6 +16,7 @@
 		xmlns:mxdg="https://schemas.eremexcontrols.net/avalonia/datagrid"
 		xmlns:mxdcv="clr-namespace:Eremex.AvaloniaUI.Controls.DataControl.Visuals;assembly=Eremex.Avalonia.Controls"
 		xmlns:mxtl="https://schemas.eremexcontrols.net/avalonia/treelist"
+		xmlns:local="clr-namespace:ApiTask.Views"
 		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ApiTask.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -27,6 +28,10 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
 	</mx:MxWindow.DataContext>
+		
+	<mx:MxWindow.Resources>
+		<local:MainTreeListChildrenSelector x:Key="TreeSelector"/>
+	</mx:MxWindow.Resources>
 
 
 	<Interaction.Behaviors>
@@ -125,10 +130,12 @@
 					<ScrollViewer>
 						<mxtl:TreeViewControl
 						  Name="treeView"
-						  ItemsSource="{Binding Cities}"
+						  ItemsSource="{Binding Categories}"
+						  
 						  DataFieldName="Name"
 						  SearchPanelDisplayMode="Always"
-						  Height="600"
+						  Height="550"
+						  ChildrenSelector="{StaticResource TreeSelector}"
 						  />
 					</ScrollViewer>
 

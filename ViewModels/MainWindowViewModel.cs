@@ -30,6 +30,9 @@ namespace ApiTask.ViewModels
         private static readonly string CodesSqlKey = "codes";
         private static readonly string ParametersSqlKey = "parameters";
 
+        private List<List<string>> MainData;
+        private List<List<string>> Params = new List<List<string>>();
+
         public int SelectedRowIndex { get; set; }
 
         public SortingTreeMemento SortingTreeState { get; private set; }
@@ -45,11 +48,76 @@ namespace ApiTask.ViewModels
         ObservableCollection<string> details = new ObservableCollection<string>();
 
         [ObservableProperty]
-        ObservableCollection<City> cities = new ObservableCollection<City>();
+        ObservableCollection<Codes> categories = new ObservableCollection<Codes>();
 
         public async Task OnSortingButtonClick()
         {
-            var sortingTree = await WeakReferenceMessenger.Default.Send(new TreeDialogueMessage());
+            bool isChanged = await WeakReferenceMessenger.Default.Send(new TreeDialogueMessage());
+            Categories.Clear();
+            List<string> nonCat = new List<string>();
+            List<string> cat = new List<string>();
+            List<List<string>> partial = new List<List<string>>();
+            for (int i = 0; i < SortingTreeState.ChangedParameters.Count; i++)
+            {
+                partial.Add(new List<string>());
+            }
+            if (isChanged)
+            {
+                Categories.Clear();
+                int param = 0;
+                for (int i = 0; i < Params.Count; i++)
+                {
+                   for (int j = 0; j < SortingTreeState.ChangedParameters.Count; j++)
+                   {
+                      
+                        if (Params[i].Contains(SortingTreeState.ChangedParameters[j]))
+                        {
+                            param++;
+                        }
+                   }
+                   if (param == 0)
+                   {
+                        nonCat.Add(MainData[0][i]);
+                   }
+                   else if (param == SortingTreeState.ChangedParameters.Count)
+                   {
+                        cat.Add(MainData[0][i]);
+                   }
+                   else
+                    {
+                        partial[param].Add(MainData[0][i]);
+                    }
+                        param = 0;
+                   
+                }
+                CodeCategory nonCategory = new CodeCategory("Без категории");
+                CodeCategory allCategory = new CodeCategory("Все параметры");
+                List<CodeCategory> categories = new List<CodeCategory>();
+                foreach (string code in cat)
+                {
+                    allCategory.Codes.Add(new Codes(code));
+                }
+
+                foreach (string code in nonCat)
+                {
+                    nonCategory.Codes.Add(new Codes(code));
+                }
+
+                for (int i =0; i < partial.Count; i++) 
+                {
+                    CodeCategory t = new CodeCategory($"Без параметра: {SortingTreeState.ChangedParameters[i]}");
+                    foreach (string code in partial[i])
+                    {
+                        t.Codes.Add(new Codes(code)); 
+                    }
+                    Categories.Add(t);
+                }
+
+
+                Categories.Add(nonCategory);
+                Categories.Add(allCategory);
+                
+            }
         }
 
         public void OnSelectionPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -156,23 +224,29 @@ namespace ApiTask.ViewModels
         {
             await ApplyToken();
             await OpenDbConnection();
-            //await GetCodes();
+            await GetCodes();
             await GetParameters();
         }
 
         private async Task GetParameters()
         {
-            SortingTreeState = new SortingTreeMemento(await DbConnection.GetData
-                (ReadConfiguration.GetValueByKeyFromConfiguration(ParametersSqlKey)));
+            List<List<string>> data = await DbConnection.GetData
+                (ReadConfiguration.GetValueByKeyFromConfiguration(ParametersSqlKey), 1);
+            SortingTreeState = new SortingTreeMemento(data[0]);
         }
 
         private async Task GetCodes()
         {
-            List<string> test = await DbConnection.GetData
-                (ReadConfiguration.GetValueByKeyFromConfiguration(CodesSqlKey));
-            foreach (string testitem in test)
+            MainData = await DbConnection.GetData
+                (ReadConfiguration.GetValueByKeyFromConfiguration(CodesSqlKey), 2);
+
+            for (int i = 0; i < MainData[1].Count; i++) 
             {
-                Cities.Add(new City(testitem));
+                Params.Add(MainData[1][i].Split(',').ToList<string>());
+            }
+            foreach (string testitem in MainData[0])
+            {
+                 Categories.Add(new Codes(testitem));
             }
         }
 
@@ -214,11 +288,4 @@ namespace ApiTask.ViewModels
             Environment.Exit(1);
         }
     }
-
-    public class City
-    {
-        public City(string name) { Name = name; }
-        public string Name { get; set; }
-    }
-
 }

@@ -3,6 +3,7 @@ using ApiTask.Services.Messages;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace ApiTask.ViewModels
@@ -59,13 +60,18 @@ namespace ApiTask.ViewModels
 
         private void SaveState()
         {
+            List<string> changedParameters = new List<string>();
             for (int i = 0; i < CheckBoxes.Count; i++)
             {
+                if ((bool)CheckBoxes[i].IsChecked)
+                    changedParameters.Add((string)CheckBoxes[i].Content);
                 if (!CheckBoxes[i].IsChecked == State.States[i])
                 {
+                    
                     State.States[i] = CheckBoxes[i].IsChecked;
                 }
             }
+            State.ChangedParameters = changedParameters;
         }
     }
 }
