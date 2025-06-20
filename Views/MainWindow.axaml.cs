@@ -1,7 +1,6 @@
 using ApiTask.Models;
 using ApiTask.Services.Messages;
 using ApiTask.ViewModels;
-using Avalonia.OpenGL;
 using CommunityToolkit.Mvvm.Messaging;
 using Eremex.AvaloniaUI.Controls.Common;
 using Eremex.AvaloniaUI.Controls.TreeList;
@@ -22,27 +21,8 @@ namespace ApiTask.Views
 
         private void RegisterMessage()
         {
-            WeakReferenceMessenger.Default.Register<MainWindow, TreeDialogueMessage>(this, (w, m) =>
-            {
-                SortingTreeWindowViewModel model = GetModel();
-                MessageHandler(model, w, m); 
-            });
-        }
-
-        private SortingTreeWindowViewModel GetModel()
-        {
-            SortingTreeWindowViewModel model = new SortingTreeWindowViewModel();
-            model.SetParameters(ViewModel.SortingTreeState);
-            return model;
-        }
-
-        private void MessageHandler(SortingTreeWindowViewModel model, MainWindow w, TreeDialogueMessage m)
-        {
-            SortingTreeWindow dialogue = new SortingTreeWindow
-            {
-                DataContext = model
-            };
-            m.Reply(dialogue.ShowDialog<bool>(w));
+            WeakReferenceMessenger.Default.Register<MainWindow, TreeDialogueMessage>(this,
+                (w, m) => ViewModel.RegisterOpenSortingWindow(w, m));
         }
 
         protected override void OnOpened(EventArgs e)

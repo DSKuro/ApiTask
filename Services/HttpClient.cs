@@ -49,7 +49,7 @@ namespace ApiTask.Services
             }
         }
 
-        public static async Task<object> GetDataWithJSONImpl(QueryBuilder path, Type castType)
+        private static async Task<object> GetDataWithJSONImpl(QueryBuilder path, Type castType)
         {
             HttpResponseMessage response;
                 response = await GetResponse(path);

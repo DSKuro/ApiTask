@@ -7,18 +7,19 @@ namespace ApiTask.Services
 {
     public class DbConnection
     {
-        static SqlConnection Connection;
+        private SqlConnection Connection;
 
-        public static async Task OpenConnection(string ConnectionUrl)
+        public DbConnection(string connectionUrl)
         {
-            if (Connection == null)
-            {
-                Connection = new SqlConnection(ConnectionUrl);
-            }
+            Connection = new SqlConnection(connectionUrl);
+        }
+
+        public async Task OpenConnection()
+        {
             await Connection.OpenAsync();
         }
 
-        public static async Task CloseConnection()
+        public async Task CloseConnection()
         {
             if (Connection.State == ConnectionState.Open)
             {
@@ -26,27 +27,27 @@ namespace ApiTask.Services
             }
         }
 
-        public static async Task<List<List<string>>> GetData(string command, int columnsCount)
+        public async Task<List<List<string>>> GetData(string command, int columnsCount)
         {
             List<List<string>> data = new List<List<string>>();
             await GetDataImpl(command, data, columnsCount);
             return data;
         }
 
-        private static async Task GetDataImpl(string command, List<List<string>> data, int columnsCount)
+        private async Task GetDataImpl(string command, List<List<string>> data, int columnsCount)
         {
             SqlDataReader reader = await ExecuteCommand(command);
             await ReadData(reader, data, columnsCount);
             await reader.CloseAsync();
         }
 
-        private static async Task<SqlDataReader> ExecuteCommand(string command)
+        private async Task<SqlDataReader> ExecuteCommand(string command)
         {
             SqlCommand sqlCommand = new SqlCommand(command, Connection);
             return await sqlCommand.ExecuteReaderAsync();
         }
 
-        private static async Task ReadData(SqlDataReader reader, List<List<string>> data, int columnsCount)
+        private async Task ReadData(SqlDataReader reader, List<List<string>> data, int columnsCount)
         {
             if (reader.HasRows)
             {
@@ -55,7 +56,7 @@ namespace ApiTask.Services
             }
         }
 
-        private static void PrepareData(List<List<string>> data, int columnsCount)
+        private void PrepareData(List<List<string>> data, int columnsCount)
         {
             for (int i = 0; i < columnsCount; i++)
             {
@@ -63,7 +64,7 @@ namespace ApiTask.Services
             }
         }
 
-        private static async Task ReadDataImpl(SqlDataReader reader, List<List<string>> data, int columnsCount)
+        private async Task ReadDataImpl(SqlDataReader reader, List<List<string>> data, int columnsCount)
         {
             while (await reader.ReadAsync())
             {

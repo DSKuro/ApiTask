@@ -4,12 +4,16 @@ using ApiTask.Services.Dialogues;
 using ApiTask.Services.Exceptions;
 using ApiTask.Services.Messages;
 using ApiTask.Services.ViewModelSubServices;
+using ApiTask.Views;
 using Avalonia;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using DynamicData.Tests;
 using Eremex.AvaloniaUI.Controls.DataGrid;
+using Eremex.AvaloniaUI.Icons;
 using Microsoft.Data.SqlClient;
 using System;  
 using System.Collections.Generic;
@@ -17,6 +21,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ApiTask.ViewModels
@@ -31,12 +36,10 @@ namespace ApiTask.ViewModels
         private static readonly string CodesSqlKey = "codes";
         private static readonly string ParametersSqlKey = "parameters";
 
+        private UpdateTreeAlgorithm UpdateTreeAlgorithm;
+        private SortingTreeMemento SortingTreeState;
         private List<string> CodesData = new List<string>();
         private List<List<string>> Params = new List<List<string>>();
-
-        public int SelectedRowIndex { get; set; }
-
-        public SortingTreeMemento SortingTreeState { get; private set; }
 
         [ObservableProperty]
         ObservableCollection<SelectedMaterial> selectedMaterials =
@@ -49,7 +52,31 @@ namespace ApiTask.ViewModels
         ObservableCollection<string> details = new ObservableCollection<string>();
 
         [ObservableProperty]
-        ObservableCollection<Codes> categories = new ObservableCollection<Codes>();
+        SmartCollection<Codes> categories = new SmartCollection<Codes>();
+
+        public int SelectedRowIndex { get; set; }
+
+        public void RegisterOpenSortingWindow(MainWindow w, TreeDialogueMessage m)
+        {
+            SortingTreeWindowViewModel model = GetModel();
+            MessageHandler(model, w, m);
+        }
+
+        private SortingTreeWindowViewModel GetModel()
+        {
+            SortingTreeWindowViewModel model = new SortingTreeWindowViewModel();
+            model.SetParameters(SortingTreeState);
+            return model;
+        }
+
+        private void MessageHandler(SortingTreeWindowViewModel model, MainWindow w, TreeDialogueMessage m)
+        {
+            SortingTreeWindow dialogue = new SortingTreeWindow
+            {
+                DataContext = model
+            };
+            m.Reply(dialogue.ShowDialog<bool>(w));
+        }
 
         public async Task OnSortingButtonClick()
         {
@@ -68,106 +95,7 @@ namespace ApiTask.ViewModels
         private void UpdateTreeView()
         {
             Categories.Clear();
-            UpdateCategories();
-        }
-
-        private void UpdateCategories()
-        {
-            (List<string> nonCategorized, List<string> allCategorized,
-                List<List<string>> partialCategorized) = InitializeCategories();
-            DefineCategories(nonCategorized, allCategorized, partialCategorized);
-            UpdateCategoriesInBinding(nonCategorized, allCategorized, partialCategorized);
-        }
-
-        private (List<string>, List<string>, List<List<string>>) InitializeCategories()
-        {
-            List<string> nonCategorized = new List<string>();
-            List<string> allCategorized = new List<string>();
-            List<List<string>> partialCategorized = new List<List<string>>();
-            return (nonCategorized, allCategorized, partialCategorized);
-        }
-
-        private void DefineCategories(List<string> nonCategorized, List<string> allCategorized,
-            List<List<string>> partialCategorized)
-        {
-            int param = 0;
-            for (int i = 0; i < Params.Count; i++)
-            {
-                for (int j = 0; j < SortingTreeState.EnabledParameters.Count; j++)
-                {
-
-                    if (Params[i].Contains(SortingTreeState.EnabledParameters[j]))
-                    {
-                        param++;
-                    }
-                }
-                DefineCategoriesImpl(nonCategorized, allCategorized, partialCategorized, param, i);
-                param = 0;
-            }
-        }
-
-        private void DefineCategoriesImpl(List<string> nonCategorized, List<string> allCategorized,
-            List<List<string>> partialCategorized, int param, int i)
-        {
-            if (param == 0)
-            {
-                nonCategorized.Add(CodesData[i]);
-            }
-            else if (param == SortingTreeState.EnabledParameters.Count)
-            {
-                allCategorized.Add(CodesData[i]);
-            }
-            else
-            {
-                for (int j = 0; j < param; j++)
-                {
-                    if (partialCategorized.Count < param)
-                    {
-                        partialCategorized.Add(new List<string>());
-                    }
-                    partialCategorized[j].Add(CodesData[i]);
-                }
-
-            }
-        }
-
-        private void UpdateCategoriesInBinding(List<string> nonCategorized, List<string> allCategorized,
-            List<List<string>> partialCategorized)
-        {
-            if (nonCategorized.Count != 0)
-            {
-                CodeCategory nonCategory = new CodeCategory("Без категории");
-
-                foreach (string code in nonCategorized)
-                {
-                    nonCategory.Codes.Add(new Codes(code));
-                }
-                Categories.Add(nonCategory);
-            }
-
-            if (partialCategorized.Count != 0)
-            {
-
-                for (int i = 0; i < partialCategorized.Count; i++)
-                {
-                    CodeCategory category = new CodeCategory($"Без параметра: {SortingTreeState.EnabledParameters[i]}");
-                    foreach (string code in partialCategorized[i])
-                    {
-                        category.Codes.Add(new Codes(code));
-                    }
-                    Categories.Add(category);
-                }
-            }
-
-            if (allCategorized.Count != 0)
-            {
-                CodeCategory allCategory = new CodeCategory("Все параметры");
-                foreach (string code in allCategorized)
-                {
-                    allCategory.Codes.Add(new Codes(code));
-                }
-                Categories.Add(allCategory);
-            }
+            UpdateTreeAlgorithm.UpdateCategories();
         }
 
         public void OnSelectionPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -259,12 +187,6 @@ namespace ApiTask.ViewModels
         }
 
         [RelayCommand]
-        private async Task CloseForm()
-        {
-            await DbConnection.CloseConnection();
-        }
-
-        [RelayCommand]
         private async Task OpenForm()
         {
             await OnOpenForm();
@@ -277,52 +199,72 @@ namespace ApiTask.ViewModels
 
         private async Task OnOpenFormImpl()
         {
-            await ApplyToken();
-            await OpenDbConnection();
-            await GetDataFromDb();
-            SetCategories();
+            Task t1 = Task.Run(ApplyToken);
+            Task t2 = Task.Run(GetCodes);
+            Task t3 = Task.Run(GetParameters);
+            Task.WaitAll(t1, t2, t3);
         }
 
-        private async Task GetDataFromDb()
+        private async Task GetCodes()
         {
             try
             {
-                await GetDataFromDbImpl();
+                DbConnection connection = await OpenDbConnection();
+                ParseData(await DbDataProcess.GetCodes(connection, CodesSqlKey));
+                SetCategories();
+
             }
             catch (SqlException e)
             {
                 await MessageBoxHelper(e.Message, ErrorCallback);
             }
+
         }
 
-        private async Task GetDataFromDbImpl()
+        private async Task GetParameters()
         {
-            ParseData(await DbDataProcess.GetCodes(CodesSqlKey));
-            SortingTreeState = await DbDataProcess.GetParameters(ParametersSqlKey);
+            try
+            {
+                await GetParametersImpl();
+            }
+            catch (SqlException e)
+            {
+                await MessageBoxHelper(e.Message, ErrorCallback);
+            }
+
+        }
+
+        private async Task GetParametersImpl()
+        {
+            DbConnection connection = await OpenDbConnection();
+            SortingTreeState = await DbDataProcess.GetParameters(connection, ParametersSqlKey);
+            UpdateTreeAlgorithm = new UpdateTreeAlgorithm(SortingTreeState, CodesData, Params, Categories);
         }
 
         private void ParseData(List<List<string>> data)
         {
-            for (int i = 0; i < data[0].Count; i++)
+            CodesData.AddRange(data[0]);
+            for (int i = 0; i < data[1].Count; i++)
             {
-                CodesData.Add(data[0][i]);
                 Params.Add(data[1][i].Split(',').ToList<string>());
             }
         }
 
         private void SetCategories()
         {
-            foreach (string code in  CodesData)
+            List<Codes> codes = new List<Codes>();
+            foreach (string code in CodesData)
             {
-                Categories.Add(new Codes(code));
+                codes.Add(new Codes(code));
             }
+            Categories.AddRange(codes);
         }
 
-        private async Task OpenDbConnection()
+        private async Task<DbConnection> OpenDbConnection()
         {
             try
             {
-                await DbConnection.OpenConnection(ReadConfiguration.GetValueByKeyFromSecrets(DatabaseKey));
+                return await GetConnection();
             }
             catch (SqlException e)
             {
@@ -332,6 +274,14 @@ namespace ApiTask.ViewModels
             {
                 await MessageBoxHelper(KeyMessage, ErrorCallback);
             }
+            return null;
+        }
+
+        private async Task<DbConnection> GetConnection()
+        {
+            DbConnection connection = new DbConnection(ReadConfiguration.GetValueByKeyFromSecrets(DatabaseKey));
+            await connection.OpenConnection();
+            return connection;
         }
 
         private async Task ApplyToken()

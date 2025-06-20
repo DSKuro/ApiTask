@@ -1,7 +1,4 @@
-﻿using ApiTask.ViewModels;
-using CommunityToolkit.Mvvm.Messaging.Messages;
-using System;
-using System.Collections.Generic;
+﻿using CommunityToolkit.Mvvm.Messaging.Messages;
 
 namespace ApiTask.Services.Messages
 {

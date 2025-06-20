@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ApiTask.Services
 {
-    public class ExcelParser
+    public static class ExcelParser
     {
         public static List<string> GetDataFromFile(string filename)
         {
