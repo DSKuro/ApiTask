@@ -1,8 +1,6 @@
 ﻿using ApiTask.Models;
-using Eremex.AvaloniaUI.Controls.Utils;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace ApiTask.Services.ViewModelSubServices
@@ -81,7 +79,6 @@ namespace ApiTask.Services.ViewModelSubServices
                 {
                     partialCategorized[SortingTreeState.EnabledParameters[index]].Add(CodesData[i]);
                 }
-
             }
         }
 
@@ -92,7 +89,6 @@ namespace ApiTask.Services.ViewModelSubServices
             {
                 CreateCategory(nonCategorized, NonCategorizedTitle);
             }
-
 
             IEnumerable<KeyValuePair<string, List<string>>> result = partialCategorized
                 .Where(pair => pair.Value.Count != 0);
@@ -111,12 +107,7 @@ namespace ApiTask.Services.ViewModelSubServices
 
             if (partialCategorized.Count == 0 && allCategorized.Count == 0)
             {
-                List<Codes> codes = new List<Codes>();
-                foreach (string code in CodesData)
-                {
-                    codes.Add(new Codes(code));
-                }
-                Categories.AddRange(codes);
+                FillAllCodes();
             } 
         }
 
@@ -128,6 +119,16 @@ namespace ApiTask.Services.ViewModelSubServices
                 category.Codes.Add(new Codes(code));
             }
             Categories.Add(category);
+        }
+
+        private void FillAllCodes()
+        {
+            List<Codes> codes = new List<Codes>();
+            foreach (string code in CodesData)
+            {
+                codes.Add(new Codes(code));
+            }
+            Categories.AddRange(codes);
         }
     }
 }

@@ -47,6 +47,8 @@
 					<mxb:Toolbar x:Name="MainMenu" ToolbarName="Main Menu" StretchToolbar="True"
 								 AllowDragToolbar="False" ShowCustomizationButton="False">
 						<mxb:ToolbarButtonItem
+							Name="btnOpenFile"
+							IsEnabled="False"
 							Header="Open"
 							Command="{Binding OpenFileCommand}"
 							Category="Main Menu"
@@ -94,7 +96,7 @@
 					<mxdg:GridColumn.CellTemplate>
 						<DataTemplate DataType="{x:Type mxdcv:CellData}" x:CompileBindings="False">
 							<StackPanel Orientation="Horizontal">
-								<Button Focusable="False" BorderBrush="Transparent" Background="Transparent"
+								<Button Focusable="False" BorderBrush="Transparent" Background="Transparent" 
 										Command="{Binding DataContext.OnTransitionButtonClicked,
 										 ElementName=mainGrid}">
 									<Svg Width="20" Height="20" Path="/Assets/link.svg"
@@ -119,7 +121,8 @@
 			</mxdg:DataGridControl>
 			<Border BoxShadow="5 5 10 0 DarkGray" Grid.Column="2" BorderThickness="1, 1, 0, 1" BorderBrush="{DynamicResource BorderBrush}" Height="600">
 				<StackPanel>
-					<Button HorizontalAlignment="Right" BorderBrush="Transparent"
+					<Button Name="btnSort" HorizontalAlignment="Right" BorderBrush="Transparent"
+							IsEnabled="False"
 							Command="{Binding OnSortingButtonClick}" Background="Transparent">
 						<Svg Width="20" Height="20" Path="/Assets/tree.svg"
 								 Css="{DynamicResource SvgFill}"  />

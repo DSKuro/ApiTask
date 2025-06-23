@@ -16,13 +16,21 @@ namespace ApiTask.Views
         public MainWindow()
         {
             InitializeComponent();
-            RegisterMessage();
+            RegisterMessages();
         }
 
-        private void RegisterMessage()
+        private void RegisterMessages()
         {
             WeakReferenceMessenger.Default.Register<MainWindow, TreeDialogueMessage>(this,
                 (w, m) => ViewModel.RegisterOpenSortingWindow(w, m));
+            WeakReferenceMessenger.Default.Register<MainWindow, MainModelEnableButtonsMessage>(this,
+                (w, m) => EnableButtons());
+        }
+
+        private void EnableButtons()
+        {
+            btnOpenFile.IsEnabled = true;
+            btnSort.IsEnabled = true;
         }
 
         protected override void OnOpened(EventArgs e)

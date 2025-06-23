@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Tmds.DBus.Protocol;
 
 namespace ApiTask.Services.ViewModelSubServices
 {

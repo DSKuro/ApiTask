@@ -6,14 +6,11 @@ using ApiTask.Services.Messages;
 using ApiTask.Services.ViewModelSubServices;
 using ApiTask.Views;
 using Avalonia;
-using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using DynamicData.Tests;
 using Eremex.AvaloniaUI.Controls.DataGrid;
-using Eremex.AvaloniaUI.Icons;
 using Microsoft.Data.SqlClient;
 using System;  
 using System.Collections.Generic;
@@ -21,7 +18,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ApiTask.ViewModels
@@ -44,13 +40,10 @@ namespace ApiTask.ViewModels
         [ObservableProperty]
         ObservableCollection<SelectedMaterial> selectedMaterials =
             new ObservableCollection<SelectedMaterial>(new List<SelectedMaterial>());
-
         [ObservableProperty]
         string url;
-
         [ObservableProperty]
         ObservableCollection<string> details = new ObservableCollection<string>();
-
         [ObservableProperty]
         SmartCollection<Codes> categories = new SmartCollection<Codes>();
 
@@ -189,36 +182,36 @@ namespace ApiTask.ViewModels
         [RelayCommand]
         private async Task OpenForm()
         {
-            await OnOpenForm();
-        }
-        
-        private async Task OnOpenForm()
-        {
             await OnOpenFormImpl();
         }
 
         private async Task OnOpenFormImpl()
         {
-            Task t1 = Task.Run(ApplyToken);
-            Task t2 = Task.Run(GetCodes);
-            Task t3 = Task.Run(GetParameters);
-            Task.WaitAll(t1, t2, t3);
+            Task applyToken = Task.Run(ApplyToken);
+            Task getCodes = Task.Run(GetCodes);
+            Task getParameters = Task.Run(GetParameters);
+            Task.WaitAll(applyToken, getCodes, getParameters);
+            WeakReferenceMessenger.Default.Send(new MainModelEnableButtonsMessage());
         }
 
         private async Task GetCodes()
         {
             try
             {
-                DbConnection connection = await OpenDbConnection();
-                ParseData(await DbDataProcess.GetCodes(connection, CodesSqlKey));
-                SetCategories();
-
+                await GetCodesImpl();
             }
             catch (SqlException e)
             {
                 await MessageBoxHelper(e.Message, ErrorCallback);
             }
 
+        }
+
+        private async Task GetCodesImpl()
+        {
+            DbConnection connection = await OpenDbConnection();
+            ParseData(await DbDataProcess.GetCodes(connection, CodesSqlKey));
+            SetCategories();
         }
 
         private async Task GetParameters()
