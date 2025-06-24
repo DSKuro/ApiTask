@@ -198,23 +198,18 @@ namespace ApiTask.ViewModels
         private async Task OnOpenFormImpl()
         {
             Task applyToken = Task.Run(ApplyToken);
-            Task getCodes = Task.Run(GetCodes);
-            Task getParameters = Task.Run(GetParameters);
-            Task.WaitAll(applyToken, getCodes, getParameters);
-            WeakReferenceMessenger.Default.Send(new MainModelEnableButtonsMessage());
-        }
-
-        private async Task GetCodes()
-        {
+            Task getCodes = Task.Run(GetCodesImpl);
+            Task getParameters = Task.Run(GetParametersImpl);
             try
             {
-                await GetCodesImpl();
+                await Task.WhenAll(applyToken, getCodes, getParameters);
             }
-            catch (SqlException e)
+            catch (Exception ex)
             {
-                await MessageBoxHelper(e.Message, ErrorCallback);
+                await MessageBoxHelper(ex.Message, ErrorCallback);
             }
-
+            
+            WeakReferenceMessenger.Default.Send(new MainModelEnableButtonsMessage());
         }
 
         private async Task GetCodesImpl()
@@ -222,19 +217,6 @@ namespace ApiTask.ViewModels
             DbConnection connection = await OpenDbConnection();
             ParseData(await _dbDataProcess.GetCodes(connection, CodesSqlKey));
             SetCategories();
-        }
-
-        private async Task GetParameters()
-        {
-            try
-            {
-                await GetParametersImpl();
-            }
-            catch (SqlException e)
-            {
-                await MessageBoxHelper(e.Message, ErrorCallback);
-            }
-
         }
 
         private async Task GetParametersImpl()
@@ -265,19 +247,7 @@ namespace ApiTask.ViewModels
 
         private async Task<DbConnection> OpenDbConnection()
         {
-            try
-            {
-                return await GetConnection();
-            }
-            catch (SqlException e)
-            {
-                await MessageBoxHelper(e.Message, ErrorCallback);
-            }
-            catch (ArgumentNullException e)
-            {
-                await MessageBoxHelper(KeyMessage, ErrorCallback);
-            }
-            return null;
+            return await GetConnection();
         }
 
         private async Task<DbConnection> GetConnection()
