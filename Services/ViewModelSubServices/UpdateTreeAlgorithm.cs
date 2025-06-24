@@ -8,18 +8,18 @@ namespace ApiTask.Services.ViewModelSubServices
     public class UpdateTreeAlgorithm
     {
         private static readonly string NonCategorizedTitle = "Без категории";
-        private SortingTreeMemento SortingTreeState;
-        private List<string> CodesData;
-        private List<List<string>> Params;
-        SmartCollection<Codes> Categories;
+        private SortingTreeMemento _sortingTreeState;
+        private List<string> _codesData;
+        private List<List<string>> _params;
+        private SmartCollection<Codes> _categories;
 
         public UpdateTreeAlgorithm(SortingTreeMemento sortingTreeState, List<string> codesData, List<List<string>> codesParams,
             SmartCollection<Codes> categories)
         {
-            SortingTreeState = sortingTreeState;
-            CodesData = codesData;
-            Params = codesParams;
-            Categories = categories;
+            _sortingTreeState = sortingTreeState;
+            _codesData = codesData;
+            _params = codesParams;
+            _categories = categories;
         }
 
         public void UpdateCategories()
@@ -35,7 +35,7 @@ namespace ApiTask.Services.ViewModelSubServices
             List<string> nonCategorized = new List<string>();
             List<string> allCategorized = new List<string>();
             Dictionary<string, List<string>> partialCategorized = new Dictionary<string, List<string>>();
-            foreach (string param in SortingTreeState.EnabledParameters)
+            foreach (string param in _sortingTreeState.EnabledParameters)
             {
                 partialCategorized.Add(param, new List<string>());
             }
@@ -45,14 +45,14 @@ namespace ApiTask.Services.ViewModelSubServices
         private void DefineCategories(List<string> nonCategorized, List<string> allCategorized,
             Dictionary<string, List<string>> partialCategorized)
         {
-            List<int> changed = new List<int>(SortingTreeState.EnabledParameters.Count);
-            for (int i = 0; i < Params.Count; i++)
+            List<int> changed = new List<int>(_sortingTreeState.EnabledParameters.Count);
+            for (int i = 0; i < _params.Count; i++)
             {
                 
-                for (int j = 0; j < SortingTreeState.EnabledParameters.Count; j++)
+                for (int j = 0; j < _sortingTreeState.EnabledParameters.Count; j++)
                 {
 
-                    if (!Params[i].Contains(SortingTreeState.EnabledParameters[j]))
+                    if (!_params[i].Contains(_sortingTreeState.EnabledParameters[j]))
                     {
                         changed.Add(j);
                     }
@@ -65,19 +65,19 @@ namespace ApiTask.Services.ViewModelSubServices
         private void DefineCategoriesImpl(List<string> nonCategorized, List<string> allCategorized,
             Dictionary<string, List<string>> partialCategorized, List<int> param, int i)
         {
-            if (param.Count == SortingTreeState.EnabledParameters.Count)
+            if (param.Count == _sortingTreeState.EnabledParameters.Count)
             {
-                nonCategorized.Add(CodesData[i]);
+                nonCategorized.Add(_codesData[i]);
             }
             else if (param.Count == 0)
             {
-                allCategorized.Add(CodesData[i]);
+                allCategorized.Add(_codesData[i]);
             }
             else
             {
                 foreach (int index in param)
                 {
-                    partialCategorized[SortingTreeState.EnabledParameters[index]].Add(CodesData[i]);
+                    partialCategorized[_sortingTreeState.EnabledParameters[index]].Add(_codesData[i]);
                 }
             }
         }
@@ -85,7 +85,7 @@ namespace ApiTask.Services.ViewModelSubServices
         private void UpdateCategoriesInBinding(List<string> nonCategorized, List<string> allCategorized,
             Dictionary<string, List<string>> partialCategorized)
         {
-            if (nonCategorized.Count != 0 && nonCategorized.Count != CodesData.Count)
+            if (nonCategorized.Count != 0 && nonCategorized.Count != _codesData.Count)
             {
                 CreateCategory(nonCategorized, NonCategorizedTitle);
             }
@@ -102,7 +102,7 @@ namespace ApiTask.Services.ViewModelSubServices
 
             if (allCategorized.Count != 0)
             {
-                CreateCategory(allCategorized, string.Join(", ", SortingTreeState.EnabledParameters.ToArray()));
+                CreateCategory(allCategorized, string.Join(", ", _sortingTreeState.EnabledParameters.ToArray()));
             }
 
             if (partialCategorized.Count == 0 && allCategorized.Count == 0)
@@ -118,17 +118,17 @@ namespace ApiTask.Services.ViewModelSubServices
             {
                 category.Codes.Add(new Codes(code));
             }
-            Categories.Add(category);
+            _categories.Add(category);
         }
 
         private void FillAllCodes()
         {
             List<Codes> codes = new List<Codes>();
-            foreach (string code in CodesData)
+            foreach (string code in _codesData)
             {
                 codes.Add(new Codes(code));
             }
-            Categories.AddRange(codes);
+            _categories.AddRange(codes);
         }
     }
 }

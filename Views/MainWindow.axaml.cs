@@ -11,7 +11,7 @@ namespace ApiTask.Views
 {
     public partial class MainWindow : MxWindow
     {
-        private MainWindowViewModel ViewModel;
+        private MainWindowViewModel _viewModel;
 
         public MainWindow()
         {
@@ -22,7 +22,7 @@ namespace ApiTask.Views
         private void RegisterMessages()
         {
             WeakReferenceMessenger.Default.Register<MainWindow, TreeDialogueMessage>(this,
-                (w, m) => ViewModel.RegisterOpenSortingWindow(w, m));
+                (w, m) => _viewModel.RegisterOpenSortingWindow(w, m));
             WeakReferenceMessenger.Default.Register<MainWindow, MainModelEnableButtonsMessage>(this,
                 (w, m) => EnableButtons());
         }
@@ -54,7 +54,7 @@ namespace ApiTask.Views
 
         private void InitializeModels(MainWindowViewModel model)
         {
-            ViewModel = model;
+            _viewModel = model;
             mainGrid.DataContext = model;
             mainGrid.PropertyChanged += model.OnSelectionPropertyChanged;
         }

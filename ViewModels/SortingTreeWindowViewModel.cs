@@ -10,23 +10,23 @@ namespace ApiTask.ViewModels
 {
     public partial class SortingTreeWindowViewModel : ClosableViewModel
     {
-        private bool IsChanged = false;
-        private SortingTreeMemento State;
+        private bool _isChanged = false;
+        private SortingTreeMemento _state;
 
         [ObservableProperty]
         public ObservableCollection<CheckBox> checkBoxes = new ObservableCollection<CheckBox>();
 
         public void SetParameters(SortingTreeMemento memento)
         {
-            State = memento;
+            _state = memento;
             RestoreState();
         }
 
         private void RestoreState()
         {
-            for (int i = 0; i < State.Content.Count; i++)
+            for (int i = 0; i < _state.Content.Count; i++)
             {
-                CheckBoxes.Add(new CheckBox() { Content = State.Content[i], IsChecked = State.States[i] });
+                CheckBoxes.Add(new CheckBox() { Content = _state.Content[i], IsChecked = _state.States[i] });
             }
         }
 
@@ -50,18 +50,18 @@ namespace ApiTask.ViewModels
 
         public void OnCancelButtonClick()
         {
-            WeakReferenceMessenger.Default.Send(new TreeDialogueCloseMessage(IsChanged));
+            WeakReferenceMessenger.Default.Send(new TreeDialogueCloseMessage(_isChanged));
         }
 
         public void OnOkButtonClick()
         {
             SaveState();
-            WeakReferenceMessenger.Default.Send(new TreeDialogueCloseMessage(IsChanged));
+            WeakReferenceMessenger.Default.Send(new TreeDialogueCloseMessage(_isChanged));
         }
 
         private void SaveState()
         {
-            State.EnabledParameters = SaveStateImpl();
+            _state.EnabledParameters = SaveStateImpl();
         }
 
         private List<string> SaveStateImpl()
@@ -80,10 +80,10 @@ namespace ApiTask.ViewModels
             {
                 changedParameters.Add((string)CheckBoxes[i].Content);
             }
-            if (!CheckBoxes[i].IsChecked == State.States[i])
+            if (!CheckBoxes[i].IsChecked == _state.States[i])
             {
-                IsChanged = true;
-                State.States[i] = CheckBoxes[i].IsChecked;
+                _isChanged = true;
+                _state.States[i] = CheckBoxes[i].IsChecked;
             }
         }
     }

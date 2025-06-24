@@ -13,9 +13,9 @@ namespace ApiTask.ViewModels
 
         protected void OnClosingRequest()
         {
-            if (this.ClosingRequest != null)
+            if (ClosingRequest != null)
             {
-                this.ClosingRequest(this, EventArgs.Empty);
+                ClosingRequest(this, EventArgs.Empty);
             }
         }
 

@@ -7,23 +7,23 @@ namespace ApiTask.Services
 {
     public class DbConnection
     {
-        private SqlConnection Connection;
+        private SqlConnection _connection;
 
         public DbConnection(string connectionUrl)
         {
-            Connection = new SqlConnection(connectionUrl);
+            _connection = new SqlConnection(connectionUrl);
         }
 
         public async Task OpenConnection()
         {
-            await Connection.OpenAsync();
+            await _connection.OpenAsync();
         }
 
         public async Task CloseConnection()
         {
-            if (Connection.State == ConnectionState.Open)
+            if (_connection.State == ConnectionState.Open)
             {
-                await Connection.CloseAsync();
+                await _connection.CloseAsync();
             }
         }
 
@@ -43,7 +43,7 @@ namespace ApiTask.Services
 
         private async Task<SqlDataReader> ExecuteCommand(string command)
         {
-            SqlCommand sqlCommand = new SqlCommand(command, Connection);
+            SqlCommand sqlCommand = new SqlCommand(command, _connection);
             return await sqlCommand.ExecuteReaderAsync();
         }
 

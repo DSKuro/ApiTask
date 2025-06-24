@@ -32,22 +32,32 @@ namespace ApiTask.ViewModels
         private static readonly string CodesSqlKey = "codes";
         private static readonly string ParametersSqlKey = "parameters";
 
-        private UpdateTreeAlgorithm UpdateTreeAlgorithm;
-        private SortingTreeMemento SortingTreeState;
-        private List<string> CodesData = new List<string>();
-        private List<List<string>> Params = new List<List<string>>();
+        private UpdateTreeAlgorithm _updateTreeAlgorithm;
+        private SortingTreeMemento _sortingTreeState;
+        private AccessTokenProcess _accessTokenProcess;
+        private MaterialsProcess _materialsProcess;
+        private DbDataProcess _dbDataProcess;
+        private List<string> _codesData = new List<string>();
+        private List<List<string>> _params = new List<List<string>>();
 
         [ObservableProperty]
-        ObservableCollection<SelectedMaterial> selectedMaterials =
+        private ObservableCollection<SelectedMaterial> _selectedMaterials =
             new ObservableCollection<SelectedMaterial>(new List<SelectedMaterial>());
         [ObservableProperty]
-        string url;
+        private string _url;
         [ObservableProperty]
-        ObservableCollection<string> details = new ObservableCollection<string>();
+        private ObservableCollection<string> _details = new ObservableCollection<string>();
         [ObservableProperty]
-        SmartCollection<Codes> categories = new SmartCollection<Codes>();
+        private SmartCollection<Codes> _categories = new SmartCollection<Codes>();
 
         public int SelectedRowIndex { get; set; }
+
+        public MainWindowViewModel()
+        {
+            _accessTokenProcess = new AccessTokenProcess();
+            _dbDataProcess = new DbDataProcess();
+            _materialsProcess = new MaterialsProcess();
+        }
 
         public void RegisterOpenSortingWindow(MainWindow w, TreeDialogueMessage m)
         {
@@ -58,7 +68,7 @@ namespace ApiTask.ViewModels
         private SortingTreeWindowViewModel GetModel()
         {
             SortingTreeWindowViewModel model = new SortingTreeWindowViewModel();
-            model.SetParameters(SortingTreeState);
+            model.SetParameters(_sortingTreeState);
             return model;
         }
 
@@ -88,7 +98,7 @@ namespace ApiTask.ViewModels
         private void UpdateTreeView()
         {
             Categories.Clear();
-            UpdateTreeAlgorithm.UpdateCategories();
+            _updateTreeAlgorithm.UpdateCategories();
         }
 
         public void OnSelectionPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -163,7 +173,7 @@ namespace ApiTask.ViewModels
             ClearDetails();
             SelectedMaterials.Clear();
             string path = await GetAbsolutePathFile();
-            await MaterialsProcess.GetMaterialDataImpl(SelectedMaterials, path);
+            await _materialsProcess.GetMaterialDataImpl(SelectedMaterials, path);
         }
 
         private void ClearDetails()
@@ -210,7 +220,7 @@ namespace ApiTask.ViewModels
         private async Task GetCodesImpl()
         {
             DbConnection connection = await OpenDbConnection();
-            ParseData(await DbDataProcess.GetCodes(connection, CodesSqlKey));
+            ParseData(await _dbDataProcess.GetCodes(connection, CodesSqlKey));
             SetCategories();
         }
 
@@ -230,23 +240,23 @@ namespace ApiTask.ViewModels
         private async Task GetParametersImpl()
         {
             DbConnection connection = await OpenDbConnection();
-            SortingTreeState = await DbDataProcess.GetParameters(connection, ParametersSqlKey);
-            UpdateTreeAlgorithm = new UpdateTreeAlgorithm(SortingTreeState, CodesData, Params, Categories);
+            _sortingTreeState = await _dbDataProcess.GetParameters(connection, ParametersSqlKey);
+            _updateTreeAlgorithm = new UpdateTreeAlgorithm(_sortingTreeState, _codesData, _params, Categories);
         }
 
         private void ParseData(List<List<string>> data)
         {
-            CodesData.AddRange(data[0]);
+            _codesData.AddRange(data[0]);
             for (int i = 0; i < data[1].Count; i++)
             {
-                Params.Add(data[1][i].Split(',').ToList<string>());
+                _params.Add(data[1][i].Split(',').ToList<string>());
             }
         }
 
         private void SetCategories()
         {
             List<Codes> codes = new List<Codes>();
-            foreach (string code in CodesData)
+            foreach (string code in _codesData)
             {
                 codes.Add(new Codes(code));
             }
@@ -281,7 +291,7 @@ namespace ApiTask.ViewModels
         {
             try
             {
-                await AccessTokenProcess.ApplyTokenImpl();
+                await _accessTokenProcess.ApplyTokenImpl();
             }
             catch (HttpException ex)
             {

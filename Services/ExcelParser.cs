@@ -3,22 +3,22 @@ using System.Collections.Generic;
 
 namespace ApiTask.Services
 {
-    public static class ExcelParser
+    public class ExcelParser
     {
-        public static List<string> GetDataFromFile(string filename)
+        public List<string> GetDataFromFile(string filename)
         {
             WorksheetCollection collection = GetWorksheets(filename);
             return GetDataFromCells(collection);
         }
 
-        private static WorksheetCollection GetWorksheets(string filename)
+        private WorksheetCollection GetWorksheets(string filename)
         {
             Workbook workbook = new Workbook(filename);
             WorksheetCollection collection = workbook.Worksheets;
             return collection;
         }
 
-        private static List<string> GetDataFromCells(WorksheetCollection collection)
+        private List<string> GetDataFromCells(WorksheetCollection collection)
         {
             List<string> data = new List<string>();
 
@@ -31,7 +31,7 @@ namespace ApiTask.Services
             return data;
         }
 
-        private static void GetDataFromSheet(List<string> data, Worksheet worksheet)
+        private void GetDataFromSheet(List<string> data, Worksheet worksheet)
         {
             int rows = worksheet.Cells.MaxDataRow + 1;
             int columns = worksheet.Cells.MaxDataColumn + 1;
